@@ -4,10 +4,10 @@
  *
  * Class  EE_Ticketing
  *
- * @package			Event Espresso
- * @subpackage		espresso-new-addon
- * @author			    Brent Christensen
- * @ version		 	$VID:$
+ * @package			EE Ticketing
+ * @subpackage		core
+ * @author			Darren Ethier
+ * @since		 	1.0.0
  *
  * ------------------------------------------------------------------------
  */
@@ -37,7 +37,21 @@ Class  EE_Ticketing extends EE_Addon {
 			)
 		);
 
+		add_action( 'EE_Brewing_Regular___messages_caf', array( 'EE_Ticketing', 'register_ticketing_message_type' ) );
+	}
 
+
+
+	public static function register_ticketing_message_type() {
+		$setup_args = array(
+			'mtfilename' => 'EE_Ticketing_message_type.class.php',
+			'autoloadpaths' => array(
+				EE_TICKETING_PATH . 'core/messages/'
+				),
+			'messengers_to_activate_with' => array( 'html' ),
+			'messengers_to_validate_with' => array( 'html' )
+			);
+		EE_Register_Message_Type::register_message_type( 'ticketing', $setup_args );
 	}
 
 
