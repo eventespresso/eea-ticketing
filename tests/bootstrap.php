@@ -1,9 +1,9 @@
 <?php
 /**
- * Bootstrap for EE4 Addon Skeleton Unit Tests
+ * Bootstrap for EE_Ticketing Unit Tests
  *
- * @since 		0.0.1.dev.002
- * @package 		EE4 Addon Skeleton
+ * @since 		1.0.0
+ * @package 		EE Ticketing
  * @subpackage 	Tests
  */
 
@@ -16,7 +16,7 @@ require_once WP_TESTS_DIR . '/includes/functions.php';
 
 function _install_and_load_core_and_ee_promos() {
 	require EE_TESTS_DIR . 'includes/loader.php';
-	require EEADDON_TESTS_DIR . 'includes/loader.php';
+	require EE_TICKETING_TESTS_DIR . 'includes/loader.php';
 }
 tests_add_filter( 'muplugins_loaded', '_install_and_load_core_and_ee_promos' );
 

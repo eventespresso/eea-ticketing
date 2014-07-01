@@ -1,11 +1,11 @@
 <?php
 /**
- * Loader for EE4 Addon Skeleton Unit Tests initializes plugin and gets thing off to a start.
+ * Loader for EE Ticketing Unit Tests initializes plugin and gets thing off to a start.
  *
- * @since 		0.0.1.dev.002
- * @package 		EE4 Addon Skeleton
+ * @since 		1.0.0
+ * @package 		EE Ticketing
  * @subpackage 	tests
  */
 
-// Bootstrap EE4 Addon
-require EEADDON_PLUGIN_DIR . 'espresso-new-addon.php';
+// Bootstrap EE Ticketing
+require EE_TICKETING_PLUGIN_DIR . 'ee-addon-ticketing.php';
