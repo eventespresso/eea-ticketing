@@ -29,6 +29,10 @@ class EE_Messages_Html_Ticketing_Validator extends EE_Messages_Validator {
      * custom validator (restricting what was originally set by the messenger)
      */
     protected function _modify_validator() {
-        return; //nothing needed to change currently.
+        $new_config = $this->_MSGR->get_validator_config();
+        $new_config['datetime_list'] = array(
+                'shortcodes' => array('datetime')
+            );
+        $this->_MSGR->set_validator_config( $new_config );
     }
 }

@@ -166,7 +166,7 @@ class EE_Ticketing_message_type extends EE_message_type {
         parent::_set_valid_shortcodes();
 
         $included_shortcodes = array(
-            'recipient_details', 'organization', 'event', 'ticket', 'venue', 'primary_registration_details', 'event_author', 'email','event_meta', 'recipient_list', 'question', 'transaction', 'datetime'
+            'recipient_details', 'organization', 'event', 'ticket', 'venue', 'primary_registration_details', 'event_author', 'email','event_meta', 'recipient_list', 'transaction', 'datetime_list', 'question_list', 'datetime', 'question'
             );
 
         //add shortcodes to the single 'registrant' context we have for the ticketing message type
