@@ -123,9 +123,12 @@ class EE_Ticketing_message_type extends EE_message_type {
 
     protected function _default_template_field_content() {
         $content = file_get_contents( EE_TICKETING_PATH . 'core/messages/templates/ticketing-message-type-content.template.php', TRUE );
+        $dttlist_content = file_get_contents( EE_TICKETING_PATH . 'core/messages/templates/ticketing-message-type-datetime-list-content.template.php', TRUE );
 
         foreach ( $this->_contexts as $context => $details ) {
             $tcontent[$context]['main'] = $content;
+            $tcontent[$context]['question_list'] = '';
+            $tcontent[$context]['datetime_list'] = $dttlist_content;
         }
         return $tcontent;
     }
@@ -163,7 +166,7 @@ class EE_Ticketing_message_type extends EE_message_type {
         parent::_set_valid_shortcodes();
 
         $included_shortcodes = array(
-            'recipient_details', 'organization', 'event', 'ticket', 'venue', 'primary_registration_details', 'event_author', 'email','event_meta', 'question_list', 'question', 'transaction', 'datetime_list', 'datetime'
+            'recipient_details', 'organization', 'event', 'ticket', 'venue', 'primary_registration_details', 'event_author', 'email','event_meta', 'recipient_list', 'question', 'transaction', 'datetime'
             );
 
         //add shortcodes to the single 'registrant' context we have for the ticketing message type
