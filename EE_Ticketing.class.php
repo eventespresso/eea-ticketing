@@ -51,7 +51,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'messengers_to_activate_with' => array( 'html' ),
 			'messengers_to_validate_with' => array( 'html' )
 			);
-		EE_Register_Message_Type::register_message_type( 'ticketing', $setup_args );
+		EE_Register_Message_Type::register( 'ticketing', $setup_args );
 	}
 
 
