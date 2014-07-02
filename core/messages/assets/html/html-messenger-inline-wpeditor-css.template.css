@@ -1,0 +1,77 @@
+/* Base CSS styles overwrite for wpeditor-css */
+
+.mceContentBody body {margin: 0;padding: 0;background: #fff;}
+.mceContentBody ul, .mceContentBody ul li, .mceContentBody p, .mceContentBody div, .mceContentBody ol {margin:0;padding:0;list-style:none;}
+
+.mceContentBody .ticket img { border: none; }
+
+.mceContentBody img.map_image_link {
+	border: none !important;
+}
+
+.mceContentBody .print_button_div{
+	margin: 0 12pt;
+	width:660px;
+	padding: 10px 20px;
+	margin: 0 auto 2em auto;
+}
+.mceContentBody .print_button_div .print_button{
+	font-size:14px;
+	float:right;
+}
+
+
+/** main style wp-editor overwrite **/
+.mceContentBody .outside {
+	padding:20px;
+	width:800px;
+}
+.mceContentBody .instructions {
+	background-color:#333;
+	text-align:center;
+	color:#FFF;
+	font-weight:bold;
+	margin-bottom:0.5em;
+	width: 700px;
+	padding: 10px;
+	border: 1px solid black;
+}
+.mceContentBody .ticket {
+	border: 1px solid black;
+	width: 700px;
+	padding:20px 10px;
+	text-align: justify;
+	margin:20px 0 0 0;
+}
+.mceContentBody .top_event_title {
+	font-size: 36px;
+	font-weight:bold;
+	margin:0;
+	padding:0;
+}
+.mceContentBody .logo {
+	margin-top:2em;
+}
+.mceContentBody .qr_code {
+	/* Added this so the QR image will line up with the text and Gravatar */
+	margin-top:-15px;
+}
+.mceContentBody .gravatar {
+}
+.mceContentBody .price {
+	font-size:2em;
+}
+.mceContentBody .extra_info {
+	width: 700px;
+	padding: 10px;
+	text-align: justify;
+}
+.mceContentBody .divider {
+	border-bottom:dashed #333 1px;
+	width:700px;
+	height:1px;
+	margin:10px 0;
+}
+.mceContentBody .footer {
+	font-size:11px;
+}
