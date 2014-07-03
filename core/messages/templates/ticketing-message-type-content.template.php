@@ -4,7 +4,7 @@
 		<input class="print_button noPrint" type="button" value=" Print Ticket " onclick="window.print();return false;" />
 	</form>
 </div>
-  <div class="instructions"><?php _e('Print and bring this ticket with you to the event', 'event_espresso'); ?></div>
+  <div class="instructions">Print and bring this ticket with you to the event</div>
   <div class="ticket">
     <table width="100%" border="0">
       <tr>
@@ -21,7 +21,7 @@
       </tr>
       <tr>
         <td colspan="2" align="right" valign="top"><span class="price">[TICKET_PRICE]</span><br>
-          [RECIPIENT_FNAME] [RECIPIENT_LNAME] (<?php _e('ID:', 'event_espresso'); ?> [RECIPIENT_REGISTRATION_CODE])<br>
+          [RECIPIENT_FNAME] [RECIPIENT_LNAME] (ID: [RECIPIENT_REGISTRATION_CODE])<br>
       </tr>
     </table>
   </div>
@@ -29,7 +29,7 @@
     <div class="divider"></div>
     <table width="100%" border="0">
       <tr>
-        <td width="45%" height="35" align="left" valign="top"><p><strong><?php _e('Location:', 'event_espresso'); ?></strong><br>
+        <td width="45%" height="35" align="left" valign="top"><p><strong>Location:</strong><br>
             [VENUE_TITLE]<br>
             [VENUE_ADDRESS]<br>
 			[VENUE_ADDRESS2]<br>
