@@ -74,12 +74,26 @@ Class  EE_Ticketing extends EE_Addon {
 	public static function register_new_shortcodes( $shortcodes, EE_Shortcodes $lib ) {
 		//shortcodes to add to EE_Ticket_Shortcodes
 		if ( $lib instanceof EE_Ticket_Shortcodes ) {
-			$shortcodes['[QRCODE_*]'] = __('This is a shortcode used for generating a qrcode for the registration.  The only thing stored via this code is the unique reg_url_link code attached to a registration record.', 'event_espresso' ) . '<p>' . __('Note: there are a number of different parameters you can use for the qrcode generated.  We have the defaults at the recommended settings, however, you can change these:', 'event_espresso') .
+			$shortcodes['[QRCODE_*]'] = __('This is a shortcode used for generating a qrcode for the registration.  The only thing stored via this code is the unique reg_url_link code attached to a registration record.', 'event_espresso' ) . '<p>' . __('Note: there are a number of different parameters you can use for the qrcode generated.  We have the defaults at the recommended settings, however, you can change these:', 'event_espresso') . '<ul>' .
 					'<li><strong>d</strong>:' . __('You can add a extra param for setting the dimensions of the qr code using "d=20" format.  So [QRCODE_* d=40] will parse to a qrcode that is 40 pixels wide by 40 pixels high.', 'event_espresso') . '</li>' .
 					'<li><strong>color</strong>:' . __('Use a hexadecimal color for the qr code color.  So you can do [QRCODE_* color=#f00] to have the code printed in red.', 'event_espresso' ) . '</li>' .
 					'<li><strong>mode</strong>:' . __('This parameter is used to indicate what mode the code is generated in.  0 = normal, 1 = label strip, 2 = label box.  Use in the format [QRCODE_* mode=2].', 'event_espresso') . '</li>' .
-					'<li><strong>label</strong>:' . __('This allows you to set a custom label that will appear over the code. [QRCODE_* label="My QR Code"]', 'event_espresso' ) . '</li>';
+					'<li><strong>label</strong>:' . __('This allows you to set a custom label that will appear over the code. [QRCODE_* label="My QR Code"]', 'event_espresso' ) . '</li>' .
+					'</ul></p>';
 			$shortcodes['[GRAVATAR_*]'] = __('This shortcode will grab the email address attached to the registration and use that to attempt to grab a gravatar image.  If none is found then whatever is set in your WordPress settings for Default Avatar will be used. You can include what you want the dimensions of the gravatar to be by including params in the folowing format: "d=40".  So [GRAVATAR_* d=40] will parse to a gravatar image that is 40 pixels wide by 40 pixels high.', 'event_espresso');
+			$shortcodes['[BARCODE_*]'] = __('This shortcode is used to generate a custom barcode for the ticket instead of a qrcode.  There are a number of different options for the barcode:') . '<p></ul>' .
+				'<li><strong>w</strong>:' . __('Used to set the width (default is 2). [BARCODE_* w=20]', 'event_espresso') . '</li>' .
+				'<li><strong>h</strong>:' . __('Used to set the height (default is 70). [BARCODE_* h=50]', 'event_espresso') . '</li>' .
+				'<li><strong>type</strong>:' . __('Used to set the barcode type (default is code93). [BARCODE_* type=code93].  There are 4 different types you can choose from:', 'event_espresso') . '<ul>' .
+					'<li>code39</li>' .
+					'<li>code93</li>' .
+					'<li>code128</li>' .
+					'<li>datamatrix</li>' .
+					'</li></ul>' .
+				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #FFFFFF [white] ). [BARCODE_* bgcolor=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #000000 [black] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
+				'<ul></p>';
 		}
 		return $shortcodes;
 	}
@@ -150,6 +164,26 @@ Class  EE_Ticketing extends EE_Addon {
 				$email = $attendee instanceof EE_Attendee  ? $attendee->email() : '';
 				$size = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 96;
 				$parsed = get_avatar( $email, $size );
+			} elseif ( strpos( $shortcode, '[BARCODE_*' ) !== FALSE ) {
+
+				//attributes
+				$width = isset( $attrs['width'] ) ? (int) $attrs['width'] : 2;
+				$height = isset( $attrs['height'] ) ? (int) $attrs['height'] : 70;
+				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
+				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
+				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
+
+				//setup the barcode params in the dom
+				$parsed = '<div class="ee-barcode"><span class="ee-barcode-width" style="display:none;">' . $width . '</span>';
+				$parsed .= '<span class="ee-barcode-reg_url_link" style="display:none;">' . $registration->reg_url_link() . '</span>';
+				$parsed .= '<span class="ee-barcode-color" style="display:none;">' . $color . '</span>';
+				$parsed .= '<span class="ee-barcode-type" style="display:none;">' . $type . '</span>';
+				$parsed .= '<span class="ee-barcode-height" style="display:none;">' . $height . '</span>';
+				$parsed .= '<span class="ee-barcode-bgcolor" style="display:none;">' . $bgcolor . '</span>';
+				$parsed .= '<span class="ee-barcode-fsize" style="display:none;">' . $fsize . '</span>';
+				$parsed .= '</div>';
+
 			}
 		}
 		return $parsed;
