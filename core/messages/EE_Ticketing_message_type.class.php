@@ -39,8 +39,9 @@ class EE_Ticketing_message_type extends EE_message_type {
      * @return void
      */
     protected function _do_messenger_hooks() {
-    	if ( $this->_active_messenger instanceof EE_messenger  && $this->_active_messenger->name == 'html' ) {
+    	if ( $this->_active_messenger instanceof EE_Html_messenger  ) {
     		add_filter( 'FHEE__EE_Html_messenger__get_inline_css_template__css_url', array( $this, 'add_ticketing_css' ), 10, 3 );
+                        add_action( 'AHEE__EE_Html_messenger__enqueue_scripts_styles', array( $this, 'add_ticketing_js' )  );
     	}
     }
 
@@ -73,6 +74,22 @@ class EE_Ticketing_message_type extends EE_message_type {
     	}
 
     	return $url ? apply_filters( 'FHEE__EE_Ticketing_message_type__add_ticketing_css__url', EE_TICKETING_URL . 'core/' . $base, $url, $type )  : apply_filters( 'FHEE__EE_Ticketing_message_type__add_ticketing_css__path',EE_LIBRARIES . $base, $url, $type );
+    }
+
+
+
+    /**
+     * Takes care of enqueing necessary js for generated tickets.
+     *
+     * @return
+     */
+    public function add_ticketing_js() {
+        $min= defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.min' : '';
+        wp_register_script( 'ee-qrcode-base', EE_TICKETING_URL . 'core/shortcodes/assets/qrcode' . $min . '.js', array(), EE_TICKETING_VERSION, TRUE );
+        wp_register_script( 'ee-qrcode', EE_TICKETING_URL . 'core/shortcodes/assets/jquery.qrcode' . $min . '.js', array( 'jquery', 'ee-qrcode-base' ), EE_TICKETING_VERSION, TRUE );
+        wp_register_script( 'ee-barcode', EE_TICKETING_URL . 'core/shortcodes/assets/jquery.barcode' . $min . '.js', array( 'jquery' ), EE_TICKETING_VERSION, TRUE );
+        wp_register_script( 'ee-ticketing-js', EE_TICKETING_URL .'core/shortcodes/assets/ee-ticketing.js', array('ee-qrcode', 'ee-barcode' ), EE_TICKETING_VERSION, TRUE );
+        wp_enqueue_script( 'ee-ticketing-js' );
     }
 
 
