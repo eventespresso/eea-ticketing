@@ -116,6 +116,10 @@ Class  EE_Ticketing extends EE_Addon {
 		if ( $lib instanceof EE_Attendee_Shortcodes ) {
 			$shortcodes['[TICKET_URL]'] = __('This shortcode generates the url for accessing the ticket.', 'event_espresso');
 		}
+
+		if ( $lib instanceof EE_Recipient_Details_Shortcodes ) {
+			$shortcodes['[RECIPIENT_TICKET_URL]'] = __('This shortcode genereates the url for the ticket attached to the registration record for the recipient of a message.', 'event_espresso' );
+		}
 		return $shortcodes;
 	}
 
@@ -207,37 +211,62 @@ Class  EE_Ticketing extends EE_Addon {
 
 			}
 		} elseif ( $lib instanceof EE_Attendee_Shortcodes ) {
-			$extra = !empty( $extra_data ) && $extra_data['data'] instanceof EE_Messages_Addressee ?  $extra_data['data'] : NULL;
-
-			//incoming object should only be a registration object.
-			$registration = ! $data instanceof EE_Registration ? NULL : $data;
-
-			if ( empty( $registration ) )
-				return '';
 			if ( $shortcode == '[TICKET_URL]' ) {
-				//we need to get the correct template ID for the given event
-				$event = $registration->event();
+				$extra = !empty( $extra_data ) && $extra_data['data'] instanceof EE_Messages_Addressee ?  $extra_data['data'] : NULL;
 
-				//get the assigned ticket template for this event
-				$mtp = EEM_Message_Template_Group::instance()->get_one( array( array( 'Event.EVT_ID' => $event->ID(), 'MTP_message_type' => 'ticketing' ) ) );
+				//incoming object should only be a registration object.
+				$registration = ! $data instanceof EE_Registration ? NULL : $data;
 
-				//if no $mtp then that means an existing event that hasn't been saved yet with the templates for the global ticketing template.  So let's just grab the global.
-				$mtp = $mtp instanceof EE_Message_Template_Group ? $mtp : EEM_Message_Template_Group::instance()->get_one( array( array( 'MTP_is_global' => 1, 'MTP_message_type' => 'ticketing' ) ) );
+				if ( empty( $registration ) ) {
+					return $parsed;
+				}
 
-				$query_args = array(
-					'ee' => 'msg_url_trigger',
-					'snd_msgr' => '',
-					'gen_msgr' => 'html',
-					'message_type' => 'ticketing',
-					'context' => 'registrant',
-					'token' => $registration->reg_url_link(),
-					'GRP_ID' => $mtp->ID(),
-					'id' => 0
-					);
-				$parsed = add_query_arg( $query_args, get_site_url() );
+				$parsed = self::_get_ticket_url( $registration );
 			}
+		} elseif ( $lib instanceof EE_Recipient_Details_Shortcodes ) {
+			if ( $shortcode == '[RECIPIENT_TICKET_URL]' ) {
+				$recipient = $lib->get_recipient();
+
+				if ( ! $recipient instanceof EE_Messages_Addressee )
+					return '';
+
+				$registration = $recipient->reg_obj;
+
+				if ( ! $registration instanceof EE_Registration ) {
+					return $parsed;
+				}
+
+				$parsed = self::_get_ticket_url( $registration );
+			}
+
+
 		}
 		return $parsed;
+	}
+
+
+
+	private static function _get_ticket_url( EE_Registration $registration ) {
+		//we need to get the correct template ID for the given event
+		$event = $registration->event();
+
+		//get the assigned ticket template for this event
+		$mtp = EEM_Message_Template_Group::instance()->get_one( array( array( 'Event.EVT_ID' => $event->ID(), 'MTP_message_type' => 'ticketing' ) ) );
+
+		//if no $mtp then that means an existing event that hasn't been saved yet with the templates for the global ticketing template.  So let's just grab the global.
+		$mtp = $mtp instanceof EE_Message_Template_Group ? $mtp : EEM_Message_Template_Group::instance()->get_one( array( array( 'MTP_is_global' => 1, 'MTP_message_type' => 'ticketing' ) ) );
+
+		$query_args = array(
+			'ee' => 'msg_url_trigger',
+			'snd_msgr' => 'html',
+			'gen_msgr' => 'html',
+			'message_type' => 'ticketing',
+			'context' => 'registrant',
+			'token' => $registration->reg_url_link(),
+			'GRP_ID' => $mtp->ID(),
+			'id' => 0
+			);
+		return add_query_arg( $query_args, get_site_url() );
 	}
 
 }
