@@ -74,7 +74,12 @@ Class  EE_Ticketing extends EE_Addon {
 	public static function register_new_shortcodes( $shortcodes, EE_Shortcodes $lib ) {
 		//shortcodes to add to EE_Ticket_Shortcodes
 		if ( $lib instanceof EE_Ticket_Shortcodes ) {
-			$shortcodes['[QRCODE_*]'] = __('This is a shortcode used for generating a qrcode for the registration.  The only thing stored via this code is the unique reg_url_link code attached to a registration record.  Note: you can add a extra param for setting the dimensions of the qr code using "d=20" format.  So [QRCODE_* d=40] will parse to a qrcode that is 40 pixels wide by 40 pixels high.');
+			$shortcodes['[QRCODE_*]'] = __('This is a shortcode used for generating a qrcode for the registration.  The only thing stored via this code is the unique reg_url_link code attached to a registration record.', 'event_espresso' ) . '<p>' . __('Note: there are a number of different parameters you can use for the qrcode generated.  We have the defaults at the recommended settings, however, you can change these:', 'event_espresso') .
+					'<li><strong>d</strong>:' . __('You can add a extra param for setting the dimensions of the qr code using "d=20" format.  So [QRCODE_* d=40] will parse to a qrcode that is 40 pixels wide by 40 pixels high.', 'event_espresso') . '</li>' .
+					'<li><strong>color</strong>:' . __('Use a hexadecimal color for the qr code color.  So you can do [QRCODE_* color=#f00] to have the code printed in red.', 'event_espresso' ) . '</li>' .
+					'<li><strong>mode</strong>:' . __('This parameter is used to indicate what mode the code is generated in.  0 = normal, 1 = label strip, 2 = label box.  Use in the format [QRCODE_* mode=2].', 'event_espresso') . '</li>' .
+					'<li><strong>label</strong>:' . __('This allows you to set a custom label that will appear over the code. [QRCODE_* label="My QR Code"]', 'event_espresso' ) . '</li>';
+			$shortcodes['[GRAVATAR_*]'] = __('This shortcode will grab the email address attached to the registration and use that to attempt to grab a gravatar image.  If none is found then whatever is set in your WordPress settings for Default Avatar will be used. You can include what you want the dimensions of the gravatar to be by including params in the folowing format: "d=40".  So [GRAVATAR_* d=40] will parse to a gravatar image that is 40 pixels wide by 40 pixels high.', 'event_espresso');
 		}
 		return $shortcodes;
 	}
@@ -103,27 +108,49 @@ Class  EE_Ticketing extends EE_Addon {
 			$aee = $data instanceof EE_Messages_Addressee ? $data : NULL;
 			$aee = $extra_data instanceof EE_Messages_Addressee ? $extra_data : $aee;
 			$registration = $aee instanceof EE_Messages_Addressee && $aee->reg_obj instanceof EE_Registration ? $aee->reg_obj : NULL;
-			//qrcode check
-			if ( strpos( $shortcode, '[QRCODE_*' ) === FALSE || ! $ticket instanceof EE_Ticket ) {
+
+			//verify required data present
+			if ( ! $ticket instanceof EE_Ticket || ! $registration instanceof EE_Registration  ) {
 				return $parsed;
 			}
 
-			//let's see if there are any atts on the shortcode.
 			//require the shortcode file if necessary
 			if ( ! function_exists( 'shortcode_parse_atts' ) ) {
 				require_once( ABSPATH . WPINC . '/shortcodes.php');
 			}
 
+			//see if there are any atts on the shortcode.
 			$shortcode_to_parse = str_replace( '[', '', str_replace( ']', '', $shortcode ) );
 			$attrs = shortcode_parse_atts( $shortcode_to_parse );
 
-			//set custom dimension if present or default if not.
-			$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 135;
+			if ( strpos( $shortcode, '[QRCODE_*' ) !== FALSE  ) {
+				//set custom dimension if present or default if not.
+				$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 135;
 
-			//all the parsed qr code really does is setup some hidden values for the qrcode js to do its thing.
-			$parsed = '<div class="ee-qr-code"><span class="ee-qrcode-dimensions" style="display:none;">' . $d . '</span>';
-			$parsed .= '<span class="ee-qrcode-reg_url_link" style="display:none;">' . $registration->reg_url_link() . '</span>';
-			$parsed .= '</div>';
+				//color?
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000';
+
+				//mode?
+				$mode = isset( $attrs['mode'] ) ? intval( $attrs['mode'] ) : 0;
+				$mode = $mode > 2 || $mode < 0 ? 0 : $mode;
+
+				//label?
+				$label = isset( $attrs['label'] ) ? $attrs['label'] : '';
+
+				//all the parsed qr code really does is setup some hidden values for the qrcode js to do its thing.
+				$parsed = '<div class="ee-qr-code"><span class="ee-qrcode-dimensions" style="display:none;">' . $d . '</span>';
+				$parsed .= '<span class="ee-qrcode-reg_url_link" style="display:none;">' . $registration->reg_url_link() . '</span>';
+				$parsed .= '<span class="ee-qrcode-color" style="display:none;">' . $color . '</span>';
+				$parsed .= '<span class="ee-qrcode-mode" style="display:none;">' . $mode . '</span>';
+				$parsed .= '<span class="ee-qrcode-label" style="display:none;">' . $label . '</span>';
+				$parsed .= '</div>';
+
+			} elseif ( strpos( $shortcode, '[GRAVATAR_*' ) !== FALSE ) {
+				$attendee = $aee->att_obj;
+				$email = $attendee instanceof EE_Attendee  ? $attendee->email() : '';
+				$size = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 96;
+				$parsed = get_avatar( $email, $size );
+			}
 		}
 		return $parsed;
 	}

@@ -1,7 +1,7 @@
 <div class="outside">
 <div class="print_button_div">
 	<form>
-		<input class="print_button noPrint" type="button" value=" Print Ticket " onclick="window.print();return false;" />
+		<input class="print_button noPrint" type="button" value=" Print Ticket " />
 	</form>
 </div>
   <div class="instructions">Print and bring this ticket with you to the event</div>
@@ -16,7 +16,7 @@
             [VENUE_TITLE]<br>
 
           <div class="logo">[EVENT_IMAGE]</div></td>
-        <td width="22%" align="right" valign="top"><div class="gravatar">[GRAVATAR]</div></td>
+        <td width="22%" align="right" valign="top"><div class="gravatar">[GRAVATAR_*]</div></td>
         <td width="23%" align="right" valign="top"><div class="qr_code">[QRCODE_*]</div></td>
       </tr>
       <tr>
