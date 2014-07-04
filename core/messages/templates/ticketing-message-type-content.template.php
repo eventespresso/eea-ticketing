@@ -17,7 +17,7 @@
 
           <div class="logo">[EVENT_IMAGE]</div></td>
         <td width="22%" align="right" valign="top"><div class="gravatar">[GRAVATAR]</div></td>
-        <td width="23%" align="right" valign="top"><div class="qr_code">[QR_CODE]</div></td>
+        <td width="23%" align="right" valign="top"><div class="qr_code">[QRCODE_*]</div></td>
       </tr>
       <tr>
         <td colspan="2" align="right" valign="top"><span class="price">[TICKET_PRICE]</span><br>
