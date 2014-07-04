@@ -95,6 +95,10 @@ Class  EE_Ticketing extends EE_Addon {
 				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
 				'<ul></p>';
 		}
+
+		if ( $lib instanceof EE_Attendee_Shortcodes ) {
+			$shortcodes['[TICKET_URL]'] = __('This shortcode generates the url for accessing the ticket.', 'event_espresso');
+		}
 		return $shortcodes;
 	}
 
@@ -184,6 +188,36 @@ Class  EE_Ticketing extends EE_Addon {
 				$parsed .= '<span class="ee-barcode-fsize" style="display:none;">' . $fsize . '</span>';
 				$parsed .= '</div>';
 
+			}
+		} elseif ( $lib instanceof EE_Attendee_Shortcodes ) {
+			$extra = !empty( $extra_data ) && $extra_data['data'] instanceof EE_Messages_Addressee ?  $extra_data['data'] : NULL;
+
+			//incoming object should only be a registration object.
+			$registration = ! $data instanceof EE_Registration ? NULL : $data;
+
+			if ( empty( $registration ) )
+				return '';
+			if ( $shortcode == '[TICKET_URL]' ) {
+				//we need to get the correct template ID for the given event
+				$event = $registration->event();
+
+				//get the assigned ticket template for this event
+				$mtp = EEM_Message_Template_Group::instance()->get_one( array( array( 'Event.EVT_ID' => $event->ID(), 'MTP_message_type' => 'ticketing' ) ) );
+
+				//if no $mtp then that means an existing event that hasn't been saved yet with the templates for the global ticketing template.  So let's just grab the global.
+				$mtp = $mtp instanceof EE_Message_Template_Group ? $mtp : EEM_Message_Template_Group::instance()->get_one( array( array( 'MTP_is_global' => 1, 'MTP_message_type' => 'ticketing' ) ) );
+
+				$query_args = array(
+					'ee' => 'msg_url_trigger',
+					'snd_msgr' => '',
+					'gen_msgr' => 'html',
+					'message_type' => 'ticketing',
+					'context' => 'registrant',
+					'token' => $registration->reg_url_link(),
+					'GRP_ID' => $mtp->ID(),
+					'id' => 0
+					);
+				$parsed = add_query_arg( $query_args, get_site_url() );
 			}
 		}
 		return $parsed;
