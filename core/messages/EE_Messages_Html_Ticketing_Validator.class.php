@@ -36,7 +36,7 @@ class EE_Messages_Html_Ticketing_Validator extends EE_Messages_Validator {
         $this->_MSGR->set_validator_config( $new_config );
 
         //specific shortcode excludes
-        $this->_specific_shortcode_excludes['subject'] = array( '[QRCODE_*]', '[GRAVATAR_*]', '[BARCODE_*]', '[TICKET_URL_LINK]' );
-        $this->_specific_shortcode_excludes['main'] = array( '[TICKET_URL_LINK]' );
+        $this->_specific_shortcode_excludes['subject'] = array( '[QRCODE_*]', '[GRAVATAR_*]', '[BARCODE_*]', '[TICKET_URL]' );
+        $this->_specific_shortcode_excludes['main'] = array( '[TICKET_URL]' );
     }
 }
