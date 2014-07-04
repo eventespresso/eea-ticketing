@@ -42,6 +42,7 @@ Class  EE_Ticketing extends EE_Addon {
 		//register new shortcodes with existing libraries.
 		add_filter( 'FHEE__EE_Shortcodes__shortcodes', array( 'EE_Ticketing', 'register_new_shortcodes' ), 10, 2 );
 		add_filter( 'FHEE__EE_Shortcodes__parser_after', array( 'EE_Ticketing', 'register_new_shortcode_parsers'), 10, 5 );
+		add_filter( 'FHEE__EE_Messages_Validator__get_specific_shortcode_excludes', array( 'EE_Ticketing', 'exclude_new_shortcodes' ), 10, 3 );
 	}
 
 
@@ -56,6 +57,22 @@ Class  EE_Ticketing extends EE_Addon {
 			'messengers_to_validate_with' => array( 'html' )
 			);
 		EE_Register_Message_Type::register( 'ticketing', $setup_args );
+	}
+
+
+
+
+	public static function exclude_new_shortcodes( $shortcode_excludes, $context, EE_Messages_Validator $validator ) {
+		//we exclude ALL qrcode and barcode shortcodes from non ticketing message types.
+		if ( ! $validator instanceof EE_Messages_Html_Ticketing_Validator ) {
+			$fields = array_keys($validator->get_validators());
+			foreach ( $fields as $field ) {
+				$shortcode_excludes[$field][] = '[QRCODE_*]';
+				$shortcode_excludes[$field][] = '[BARCODE_*]';
+			}
+		}
+
+		return $shortcode_excludes;
 	}
 
 
