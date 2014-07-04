@@ -193,7 +193,7 @@ class EE_Ticketing_message_type extends EE_message_type {
 
 
     protected function _set_with_messengers() {
-        $this->_with_messengers = array();
+        $this->_with_messengers = array('html' => 'html');
     }
 
 
