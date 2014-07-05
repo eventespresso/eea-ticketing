@@ -27,6 +27,7 @@ Class  EE_Ticketing extends EE_Addon {
 				'autoloader_paths' => array(
 					'EE_Ticketing' 						=> EE_TICKETING_PATH . 'EE_Ticketing.class.php'
 				),
+				'module_paths' => array( EE_TICKETING_PATH . 'EED_Ticketing.module.php' ),
 				// if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
 				'pue_options'			=> array(
 					'pue_plugin_slug' => 'ee-addon-ticketing',
@@ -118,7 +119,11 @@ Class  EE_Ticketing extends EE_Addon {
 		}
 
 		if ( $lib instanceof EE_Recipient_Details_Shortcodes ) {
-			$shortcodes['[RECIPIENT_TICKET_URL]'] = __('This shortcode genereates the url for the ticket attached to the registration record for the recipient of a message.', 'event_espresso' );
+			$shortcodes['[RECIPIENT_TICKET_URL]'] = __('This shortcode generates the url for the ticket attached to the registration record for the recipient of a message.', 'event_espresso' );
+		}
+
+		if ( $lib instanceof EE_Transaction_Shortcodes ) {
+			$shortcodes['[TXN_TICKETS_URL]'] = __('This shortcode generates the url for all tickets in a transaction.', 'event_espresso');
 		}
 		return $shortcodes;
 	}
@@ -240,6 +245,21 @@ Class  EE_Ticketing extends EE_Addon {
 			}
 
 
+		} elseif ($lib instanceof EE_Transaction_Shortcodes ) {
+			if ( ! $data->txn instanceof EE_Transaction ) {
+				return $parsed; //get out because don't have what we need!
+			}
+
+			if ( $shortcode == '[TXN_TICKETS_URL]' ) {
+				$transaction = $data->txn;
+				$reg = $transaction->primary_registration();
+
+				$query_args = array(
+					'ee' => 'ee-txn-tickets-url',
+					'token' => $reg->reg_url_link()
+					);
+				$parsed = add_query_arg( $query_args, get_site_url() );
+			}
 		}
 		return $parsed;
 	}

@@ -1,9 +1,4 @@
 <div class="outside">
-<div class="print_button_div">
-	<form>
-		<input class="print_button noPrint" type="button" value=" Print Ticket " />
-	</form>
-</div>
   <div class="instructions">Print and bring this ticket with you to the event</div>
   <div class="ticket">
     <table width="100%" border="0">
