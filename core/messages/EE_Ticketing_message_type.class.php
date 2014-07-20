@@ -40,40 +40,8 @@ class EE_Ticketing_message_type extends EE_message_type {
      */
     protected function _do_messenger_hooks() {
     	if ( $this->_active_messenger instanceof EE_Html_messenger  ) {
-    		add_filter( 'FHEE__EE_Html_messenger__get_inline_css_template__css_url', array( $this, 'add_ticketing_css' ), 10, 3 );
                         add_action( 'AHEE__EE_Html_messenger__enqueue_scripts_styles', array( $this, 'add_ticketing_js' )  );
     	}
-    }
-
-
-
-    /**
-     * This is the callback for the FHEE__EE_Html_messenger__get_inline_css_template__css_url filter in the html messenger.
-     * By default html messenger includes css for the invoice css and order-confirmation css.  We need to override that when ticketing message type is used so that it's css (for the default template pack) gets used.
-     *
-     * @since 1.0.0
-     *
-     * @param string $url   The initial url being swapped out.
-     * @param string $type What "type" of css is being filtered.
-     */
-    public function add_ticketing_css( $url, $path_or_url, $type ) {
-    	switch ( $type ) {
-
-    		case 'base' :
-    			$base = 'messages/assets/html/html-messenger-inline-base-css.template.css';
-    			break;
-    		case 'print' :
-    			$base = 'messages/assets/html/html-messenger-inline-print-css.template.css';
-    			break;
-    		case 'wpeditor' :
-    			$base = 'messages/assets/html/html-messenger-inline-wpeditor-css.template.css';
-    			break;
-    		default :
-    			$base = 'messages/assets/html/html-messenger-inline-css.template.css';
-    			break;
-    	}
-
-    	return $url ? apply_filters( 'FHEE__EE_Ticketing_message_type__add_ticketing_css__url', EE_TICKETING_URL . 'core/' . $base, $url, $type )  : apply_filters( 'FHEE__EE_Ticketing_message_type__add_ticketing_css__path',EE_LIBRARIES . $base, $url, $type );
     }
 
 
@@ -116,38 +84,6 @@ class EE_Ticketing_message_type extends EE_message_type {
 
     protected function _set_admin_settings_fields() {
         $this->_admin_settings_fields = array();
-    }
-
-
-
-    protected function _set_default_field_content() {
-        $this->_default_field_content = array(
-            'subject' => $this->_default_template_field_subject(), //this will be the title of the generated page.
-            'content' => $this->_default_template_field_content()
-            );
-    }
-
-
-
-    protected function _default_template_field_subject() {
-        foreach ( $this->_contexts as $context => $details ) {
-            $content[$context] = sprintf( __('Your Ticket For  %s', 'event_espresso'), '[EVENT_NAME]');
-        }
-        return $content;
-    }
-
-
-
-    protected function _default_template_field_content() {
-        $content = file_get_contents( EE_TICKETING_PATH . 'core/messages/templates/ticketing-message-type-content.template.php', TRUE );
-        $dttlist_content = file_get_contents( EE_TICKETING_PATH . 'core/messages/templates/ticketing-message-type-datetime-list-content.template.php', TRUE );
-
-        foreach ( $this->_contexts as $context => $details ) {
-            $tcontent[$context]['main'] = $content;
-            $tcontent[$context]['question_list'] = '';
-            $tcontent[$context]['datetime_list'] = $dttlist_content;
-        }
-        return $tcontent;
     }
 
 

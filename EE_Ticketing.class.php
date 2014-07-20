@@ -44,6 +44,84 @@ Class  EE_Ticketing extends EE_Addon {
 		add_filter( 'FHEE__EE_Shortcodes__shortcodes', array( 'EE_Ticketing', 'register_new_shortcodes' ), 10, 2 );
 		add_filter( 'FHEE__EE_Shortcodes__parser_after', array( 'EE_Ticketing', 'register_new_shortcode_parsers'), 10, 5 );
 		add_filter( 'FHEE__EE_Messages_Validator__get_specific_shortcode_excludes', array( 'EE_Ticketing', 'exclude_new_shortcodes' ), 10, 3 );
+
+		self::_add_template_pack_filters();
+	}
+
+
+	/**
+	* Takes care of adding all filters for template packs this message type connects with.
+	*
+	* @since 1.0.0
+	*
+	* @return void.
+	*/
+	protected static function _add_template_pack_filters() {
+		add_filter( 'FHEE__EE_Messages_Template_Pack_Default__get_supports', array( 'EE_Ticketing', 'register_supports_for_default_template_pack' ), 10  );
+		add_filter( 'FHEE__EE_Template_Pack___get_specific_template__filtered_base_path', array( 'EE_Ticketing', 'register_base_path_for_ticketing_templates' ), 10, 6 );
+		add_filter( 'FHEE__EE_Messages_Template_Pack_Default__get_variation__base_path_or_url', array( 'EE_Ticketing', 'get_ticketing_css_path_or_url' ), 10, 7 );
+	}
+
+
+
+	/**
+	 * Adds the ticketing message type to the supports array for the default template pack.
+	 *
+	 * @since %VER%
+	 *
+	 * @param array  $supports Original "supports" value for default template pack.
+	 * @return array  new supports value.
+	 */
+	public static function register_supports_for_default_template_pack( $supports ) {
+		$supports['html'][] = 'ticketing';
+		return $supports;
+	}
+
+
+
+	/**
+	 * This registers the correct base path for the ticketing default templates.
+	 *
+	 * @param string $base_path    The original base path for templates.
+	 * @param EE_messenger $messenger
+	 * @param EE_message_type $message_type
+	 * @param string $field        The field requesting a template.
+	 * @param string $context      The context requesting a template.
+	 * @param EE_Messages_Template_Pack $template_pack
+	 *
+	 * @return string The new base path.
+	 */
+	public static function register_base_path_for_ticketing_templates( $base_path, $messenger, $message_type, $field, $context, $template_pack ) {
+		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ! $message_type instanceof EE_Ticketing_message_type ) {
+			return $base_path; //we're only setting up default templates for the default pack or for ticketing message type.
+		}
+
+		return EE_TICKETING_PATH . 'core/messages/templates/';
+	}
+
+
+
+
+	/**
+	 * This is the callback for the FHEE__EE_Messages_Template_Pack__get_variation__base_path_or_url filter.
+	 * Used by ticketing addon to ensure it's css is used for default ticket templates.
+	 *
+	 * @param string $base_path_or_url       The original incoming base url or path
+	 * @param string $messenger      The slug of the messenger the template is being generated for.
+	 * @param string $type             The "type" of css being requested.
+	 * @param string $variation      The variation being requested.
+	 * @param string $file_extension What file extension is expected for the variation file.
+	 * @param bool $url whether a url or path is being requested.
+	 * @param EE_Messages_Template_Pack $template_pack
+	 *
+	 * @return string new base path or url
+	 */
+	public static function get_ticketing_css_path_or_url( $base_path_or_url, $messenger, $type, $variation, $url, $file_extension, $template_pack ) {
+		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || $messenger != 'html' ) {
+			return $base_path_or_url;
+		}
+
+		return $url ? EE_TICKETING_URL . 'core/messages/templates/' : EE_TICKETING_PATH . 'core/messages/templates/';
 	}
 
 
