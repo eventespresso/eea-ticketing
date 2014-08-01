@@ -7,7 +7,7 @@ jQuery(document).ready(function($) {
 		qrcolor = $('.ee-qrcode-color', this).text();
 		qrmode = parseInt( $('.ee-qrcode-mode', this).text(), 10);
 		qrlabel = $('.ee-qrcode-label', this).text();
-		$(this).qrcode( {width: dimensions, height: dimensions, text: qrcode_val, fill: qrcolor, mode: qrmode, label : qrlabel } );
+		$(this).qrcode( {size:dimensions, text: qrcode_val, fill: qrcolor, mode: qrmode, label : qrlabel } );
 	});
 
 	//barcodes
