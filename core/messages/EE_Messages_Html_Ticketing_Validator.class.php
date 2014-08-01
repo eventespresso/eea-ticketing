@@ -30,9 +30,10 @@ class EE_Messages_Html_Ticketing_Validator extends EE_Messages_Validator {
      */
     protected function _modify_validator() {
         $new_config = $this->_MSGR->get_validator_config();
-        $new_config['datetime_list'] = array(
-                'shortcodes' => array('datetime')
-            );
+        $new_config['datetime_list']['shortcodes'] =  array('datetime');
+        $new_config['content']['shortcodes'][] = 'datetime_list';
+        $new_config['content']['shortcodes'][] = 'question_list';
+
         $this->_MSGR->set_validator_config( $new_config );
 
         //specific shortcode excludes
