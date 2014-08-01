@@ -38,5 +38,5 @@
       </tr>
     </table>
   </div>
-  <div class="footer">Powered by <a href="http://eventespresso.com" target="_blank">Event Espresso</a>, EE Ticketing Addon, and <a href="http://wordpress.org">WordPress</a></div>
+  <div class="footer">Ticketing powered by <a href="http://eventespresso.com" target="_blank">Event Espresso</a></div>
 </div>
