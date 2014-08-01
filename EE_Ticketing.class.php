@@ -59,7 +59,8 @@ Class  EE_Ticketing extends EE_Addon {
 	protected static function _add_template_pack_filters() {
 		add_filter( 'FHEE__EE_Messages_Template_Pack_Default__get_supports', array( 'EE_Ticketing', 'register_supports_for_default_template_pack' ), 10  );
 		add_filter( 'FHEE__EE_Template_Pack___get_specific_template__filtered_base_path', array( 'EE_Ticketing', 'register_base_path_for_ticketing_templates' ), 10, 6 );
-		add_filter( 'FHEE__EE_Messages_Template_Pack_Default__get_variation__base_path_or_url', array( 'EE_Ticketing', 'get_ticketing_css_path_or_url' ), 10, 7 );
+		add_filter( 'FHEE__EE_Messages_Template_Pack__get_variation__base_path_or_url', array( 'EE_Ticketing', 'get_ticketing_css_path_or_url' ), 10, 8 );
+		add_filter( 'FHEE__EE_Messages_Template_Pack__get_variation__base_path', array( 'EE_Ticketing', 'get_ticketing_css_path_or_url' ), 10, 8 );
 	}
 
 
@@ -108,6 +109,7 @@ Class  EE_Ticketing extends EE_Addon {
 	 *
 	 * @param string $base_path_or_url       The original incoming base url or path
 	 * @param string $messenger      The slug of the messenger the template is being generated for.
+	 * @param string $message_type The slug of the message type the template is being generated for.
 	 * @param string $type             The "type" of css being requested.
 	 * @param string $variation      The variation being requested.
 	 * @param string $file_extension What file extension is expected for the variation file.
@@ -116,11 +118,27 @@ Class  EE_Ticketing extends EE_Addon {
 	 *
 	 * @return string new base path or url
 	 */
-	public static function get_ticketing_css_path_or_url( $base_path_or_url, $messenger, $type, $variation, $url, $file_extension, $template_pack ) {
+	public static function get_ticketing_css_path_or_url( $base_path_or_url, $messenger, $message_type, $type, $variation, $url, $file_extension, $template_pack ) {
 		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || $messenger != 'html' ) {
 			return $base_path_or_url;
 		}
 
+		return  self::_get_ticketing_path_or_url( $url );
+	}
+
+
+
+
+	/**
+	 * Simply returns the url or path  for the ticketing templates
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param bool $url true = return url, false = return path
+	 *
+	 * @return string
+	 */
+	private static function _get_ticketing_path_or_url( $url = FALSE ) {
 		return $url ? EE_TICKETING_URL . 'core/messages/templates/' : EE_TICKETING_PATH . 'core/messages/templates/';
 	}
 
