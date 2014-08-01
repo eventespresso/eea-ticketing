@@ -31,7 +31,7 @@
 }
 .qr_code {
 	/* Added this so the QR image will line up with the text and Gravatar */
-	margin-top:-15px;
+	/*margin-top:-15px;*/
 }
 .gravatar {
 }

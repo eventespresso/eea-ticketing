@@ -265,7 +265,7 @@ Class  EE_Ticketing extends EE_Addon {
 
 			if ( strpos( $shortcode, '[QRCODE_*' ) !== FALSE  ) {
 				//set custom dimension if present or default if not.
-				$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 135;
+				$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 110;
 
 				//color?
 				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000';
@@ -288,7 +288,7 @@ Class  EE_Ticketing extends EE_Addon {
 			} elseif ( strpos( $shortcode, '[GRAVATAR_*' ) !== FALSE ) {
 				$attendee = $aee->att_obj;
 				$email = $attendee instanceof EE_Attendee  ? $attendee->email() : '';
-				$size = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 96;
+				$size = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 110;
 				$parsed = get_avatar( $email, $size );
 			} elseif ( strpos( $shortcode, '[BARCODE_*' ) !== FALSE ) {
 
