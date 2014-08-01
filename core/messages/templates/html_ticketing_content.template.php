@@ -27,7 +27,7 @@
         <td width="45%" height="35" align="left" valign="top"><p><strong><?php _e('Location:', 'event_espresso'); ?></strong><br>
             [VENUE_TITLE]<br>
             [VENUE_ADDRESS]<br>
-			[VENUE_ADDRESS2]<br>
+            [VENUE_ADDRESS2]<br>
             [VENUE_CITY], [VENUE_STATE]<br>
             [VENUE_PHONE]</p>
           <p><strong><?php _e('More Information:', 'event_espresso'); ?></strong></p>
