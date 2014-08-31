@@ -30,15 +30,16 @@ Class  EE_Ticketing extends EE_Addon {
 				'module_paths' => array( EE_TICKETING_PATH . 'EED_Ticketing.module.php' ),
 				// if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
 				'pue_options'			=> array(
-					'pue_plugin_slug' => 'ee-addon-ticketing',
+					'pue_plugin_slug' => 'eea-ticketing',
 					'plugin_basename' => EE_TICKETING_PLUGIN_FILE,
 					'checkPeriod' => '24',
 					'use_wp_update' => FALSE
+					),
+				'message_types' => array(
+					'ticketing' => self::register_ticketing_message_type()
 					)
 			)
 		);
-
-		add_action( 'EE_Brewing_Regular___messages_caf', array( 'EE_Ticketing', 'register_ticketing_message_type' ) );
 
 		//register new shortcodes with existing libraries.
 		add_filter( 'FHEE__EE_Shortcodes__shortcodes', array( 'EE_Ticketing', 'register_new_shortcodes' ), 10, 2 );
@@ -153,7 +154,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'messengers_to_activate_with' => array( 'html' ),
 			'messengers_to_validate_with' => array( 'html' )
 			);
-		EE_Register_Message_Type::register( 'ticketing', $setup_args );
+		return $setup_args;
 	}
 
 
