@@ -21,9 +21,9 @@ Class  EE_Ticketing extends EE_Addon {
 		EE_Register_Addon::register(
 			'EE_Ticketing',
 			array(
-				'version' 					=> EE_TICKETING_VERSION,
+				'version' => EE_TICKETING_VERSION,
 				'min_core_version' => '4.5.0',
-				'main_file_path' 				=> EE_TICKETING_PLUGIN_FILE,
+				'main_file_path' => EE_TICKETING_PLUGIN_FILE,
 				'autoloader_paths' => array(
 					'EE_Ticketing' 						=> EE_TICKETING_PATH . 'EE_Ticketing.class.php'
 				),
@@ -31,7 +31,6 @@ Class  EE_Ticketing extends EE_Addon {
 				// if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
 				'pue_options'			=> array(
 					'pue_plugin_slug' => 'eea-ticketing',
-					'plugin_basename' => EE_TICKETING_PLUGIN_FILE,
 					'checkPeriod' => '24',
 					'use_wp_update' => FALSE
 					),
