@@ -22,7 +22,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'EE_Ticketing',
 			array(
 				'version' => EE_TICKETING_VERSION,
-				'min_core_version' => '4.5.0',
+				'min_core_version' => '4.5.0.dev.000',
 				'main_file_path' => EE_TICKETING_PLUGIN_FILE,
 				'autoloader_paths' => array(
 					'EE_Ticketing' 						=> EE_TICKETING_PATH . 'EE_Ticketing.class.php'
@@ -293,8 +293,8 @@ Class  EE_Ticketing extends EE_Addon {
 			} elseif ( strpos( $shortcode, '[BARCODE_*' ) !== FALSE ) {
 
 				//attributes
-				$width = isset( $attrs['width'] ) ? (int) $attrs['width'] : 2;
-				$height = isset( $attrs['height'] ) ? (int) $attrs['height'] : 70;
+				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 2;
+				$height = isset( $attrs['h'] ) ? (int) $attrs['h'] : 70;
 				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
 				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
 				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
@@ -350,9 +350,11 @@ Class  EE_Ticketing extends EE_Addon {
 				$transaction = $data->txn;
 				$reg = $transaction->primary_registration();
 
+				$reg_url_link = $reg instanceof EE_Registration ? $reg->reg_url_link : 'http://dummyurlforpreview.com';
+
 				$query_args = array(
 					'ee' => 'ee-txn-tickets-url',
-					'token' => $reg->reg_url_link()
+					'token' => $reg_url_link
 					);
 				$parsed = add_query_arg( $query_args, get_site_url() );
 			}
