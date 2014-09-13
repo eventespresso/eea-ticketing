@@ -19,6 +19,7 @@
           [RECIPIENT_FNAME] [RECIPIENT_LNAME] (ID: [RECIPIENT_REGISTRATION_CODE])<br>
       </tr>
     </table>
+    [BARCODE_* w=1 h=70]
   </div>
   <div class="extra_info">
     <div class="divider"></div>
