@@ -19,7 +19,7 @@ jQuery(document).ready(function($) {
 		bc_settings.color = $('.ee-barcode-color', this ).text();
 		bc_settings.bgColor = $('.ee-barcode-bgcolor', this ).text();
 		bc_settings.fontSize = parseInt( $('.ee-barcode-fsize', this ).text(), 10 );
-		bc_settings.output= 'bmp';
+		bc_settings.output= $('.ee-barcode-output-type', this ).text();
 		bc_type = $('.ee-barcode-type', this ).text();
 		$(this).barcode( { code: barcode_val }, bc_type, bc_settings );
 	});

@@ -207,6 +207,8 @@ Class  EE_Ticketing extends EE_Addon {
 				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #FFFFFF [white] ). [BARCODE_* bgcolor=#FFFFFF]', 'event_espresso') . '</li>' .
 				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #000000 [black] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
 				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
+				'<li><strong>output_type</strong>:' .
+					__('Used to set the output type for the generated barcode (default is svg).  Can be either svg, canvas, bmp, or css. <em>Note: Some output types don\'t print well depending on the browser.  Make sure you verify printability.</em> [BARC0DE_* output_type=bmp]', 'event_espresso' ). '</li>' .
 				'<ul></p>';
 		}
 
@@ -299,6 +301,12 @@ Class  EE_Ticketing extends EE_Addon {
 				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
 				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
 				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
+				if ( isset( $attrs['output_type'] ) ) {
+					$valid_output_types = array( 'css', 'svg', 'canvas', 'bmp' );
+					$output_type = in_array( $attrs['output_type'], $valid_output_types ) ? $attrs['output_type'] : 'svg';
+				} else {
+					$output_type = 'svg';
+				}
 
 				//setup the barcode params in the dom
 				$parsed = '<div class="ee-barcode"><span class="ee-barcode-width" style="display:none;">' . $width . '</span>';
@@ -308,6 +316,7 @@ Class  EE_Ticketing extends EE_Addon {
 				$parsed .= '<span class="ee-barcode-height" style="display:none;">' . $height . '</span>';
 				$parsed .= '<span class="ee-barcode-bgcolor" style="display:none;">' . $bgcolor . '</span>';
 				$parsed .= '<span class="ee-barcode-fsize" style="display:none;">' . $fsize . '</span>';
+				$parsed .= '<span class="ee-barcode-output-type" style="display:none;">' . $output_type . '</span>';
 				$parsed .= '</div>';
 
 			}
