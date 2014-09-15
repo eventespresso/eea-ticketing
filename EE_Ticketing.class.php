@@ -298,8 +298,8 @@ Class  EE_Ticketing extends EE_Addon {
 				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 2;
 				$height = isset( $attrs['h'] ) ? (int) $attrs['h'] : 70;
 				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
-				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
+				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#ffffff';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000000';
 				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
 				if ( isset( $attrs['output_type'] ) ) {
 					$valid_output_types = array( 'css', 'svg', 'canvas', 'bmp' );
