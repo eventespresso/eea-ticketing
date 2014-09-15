@@ -17,7 +17,7 @@
 (function ($) {
 
   var barcode = {
-    settings:{
+      settings:{
       barWidth: 1,
       barHeight: 50,
       moduleSize: 5,
@@ -1101,6 +1101,10 @@
         var fontSize = barcode.intval(settings.fontSize);
         height += barcode.intval(settings.marginHRI) + fontSize;
       }
+
+      //correct any hash (#) chars in color settings to prevent breakage in Firefox/IE rendering
+        settings.bgColor = settings.bgColor.replace('#', '%23' );
+        settings.color = settings.color.replace( '#', '%23');
 
       // svg header
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + width + '" height="' + height + '">';
