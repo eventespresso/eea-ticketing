@@ -52,7 +52,7 @@ class EE_Ticketing_message_type extends EE_message_type {
      * @return
      */
     public function add_ticketing_js() {
-        $min= defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.min' : '';
+        $min= defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
         wp_register_script( 'ee-qrcode-base', EE_TICKETING_URL . 'core/shortcodes/assets/qrcode' . $min . '.js', array(), EE_TICKETING_VERSION, TRUE );
         wp_register_script( 'ee-qrcode', EE_TICKETING_URL . 'core/shortcodes/assets/jquery.qrcode' . $min . '.js', array( 'jquery', 'ee-qrcode-base' ), EE_TICKETING_VERSION, TRUE );
         wp_register_script( 'ee-barcode', EE_TICKETING_URL . 'core/shortcodes/assets/jquery.barcode' . $min . '.js', array( 'jquery' ), EE_TICKETING_VERSION, TRUE );
