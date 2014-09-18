@@ -19,7 +19,7 @@ Class  EE_Ticketing extends EE_Addon {
 	public static function register_addon() {
 		// register addon via Plugin API
 		EE_Register_Addon::register(
-			'EE_Ticketing',
+			'Ticketing',
 			array(
 				'version' => EE_TICKETING_VERSION,
 				'min_core_version' => '4.5.0.dev.000',
