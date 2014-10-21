@@ -362,7 +362,7 @@ Class  EE_Ticketing extends EE_Addon {
 				$transaction = $data->txn;
 				$reg = $transaction->primary_registration();
 
-				$reg_url_link = $reg instanceof EE_Registration ? $reg->reg_url_link : 'http://dummyurlforpreview.com';
+				$reg_url_link = $reg instanceof EE_Registration ? $reg->reg_url_link() : 'http://dummyurlforpreview.com';
 
 				$query_args = array(
 					'ee' => 'ee-txn-tickets-url',

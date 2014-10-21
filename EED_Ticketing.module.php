@@ -101,18 +101,22 @@ class EED_Ticketing  extends EED_Messages {
 
 			//now let's consolidate the $message objects into one message object for the actual displayed template
 			$content = '';
+			$final_msg = new stdClass();
 			foreach ( $messages as $message ) {
 				foreach ( $message as $msg ) {
+					$final_msg->template_pack = ! empty( $msg->template_pack ) ? $msg->template_pack : null;
+					$final_msg->vairation = ! empty( $msg->variation ) ? $msg->variation : null;
 					$content .= $msg->content;
 				}
 			}
 
-			$final_msg = new stdClass();
 			$final_msg->subject = sprintf( __( 'All tickets for the transaction: %d', 'event_espresso' ), $transaction->ID() );
 			$final_msg->content = $content;
+			$final_msg->template_pack =  ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack( 'default' ) : $final_msg->template_pack;
+			$final_msg->variation = empty( $final_msg->variation ) ? 'default' : $final_msg->variation;
 
 			//now we can trigger that message setup
-			self::$_EEMSG->send_message_with_messenger_only( 'html', $final_msg );
+			self::$_EEMSG->send_message_with_messenger_only( 'html', 'ticketing', $final_msg );
 		}
 
 	}
