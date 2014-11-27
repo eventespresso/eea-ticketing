@@ -360,7 +360,7 @@ Class  EE_Ticketing extends EE_Addon {
 
 			if ( $shortcode == '[TXN_TICKETS_URL]' ) {
 				$transaction = $data->txn;
-				$reg = $transaction->primary_registration();
+				$reg = $data->reg_obj instanceof EE_Registration ? $data->reg_obj : $transaction->primary_registration();
 
 				$reg_url_link = $reg instanceof EE_Registration ? $reg->reg_url_link() : 'http://dummyurlforpreview.com';
 
