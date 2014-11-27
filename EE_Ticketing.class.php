@@ -151,7 +151,8 @@ Class  EE_Ticketing extends EE_Addon {
 				EE_TICKETING_PATH . 'core/messages/'
 				),
 			'messengers_to_activate_with' => array( 'html' ),
-			'messengers_to_validate_with' => array( 'html' )
+			'messengers_to_validate_with' => array( 'html' ),
+			'force_activation' => true
 			);
 		return $setup_args;
 	}
