@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains test class for ee-addon-ticketing.php
+ * Contains test class for eea-ticketing.php
  *
  * @since  		1.0.0
  * @package 		EE Ticketing
@@ -9,13 +9,13 @@
 
 
 /**
- * Test class for ee-addon-ticketing.php
+ * Test class for eea-ticketing.php
  *
  * @since 		1.0.0
  * @package 		EE Ticketing
  * @subpackage 	tests
  */
-class ee_addon_ticketing_tests extends EE_UnitTestCase {
+class eea_ticketing_tests extends EE_UnitTestCase {
 
 	/**
 	 * Tests the loading of the main file

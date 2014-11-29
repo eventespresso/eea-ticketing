@@ -8,4 +8,4 @@
  */
 
 // Bootstrap EE Ticketing
-require EE_TICKETING_PLUGIN_DIR . 'ee-addon-ticketing.php';
+require EE_TICKETING_PLUGIN_DIR . 'eea-ticketing.php';

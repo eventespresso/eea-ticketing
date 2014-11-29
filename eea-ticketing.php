@@ -47,5 +47,5 @@ if ( class_exists( 'EE_Addon' )) {
 }
 add_action( 'AHEE__EE_System__load_espresso_addons', 'load_ee_core_ticketing' );
 
-// End of file ee-addon-ticketing.php
-// Location: wp-content/plugins/espresso-new-addon/ee-addon-ticketing.php
+// End of file eea-ticketing.php
+// Location: wp-content/plugins/espresso-new-addon/eea-ticketing.php
