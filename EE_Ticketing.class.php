@@ -93,7 +93,7 @@ Class  EE_Ticketing extends EE_Addon {
 	 * @return string The new base path.
 	 */
 	public static function register_base_path_for_ticketing_templates( $base_path, $messenger, $message_type, $field, $context, $template_pack ) {
-		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ! $message_type instanceof EE_Ticketing_message_type ) {
+		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ! $message_type instanceof EE_Ticketing_message_type || $message_type != 'ticketing' ) {
 			return $base_path; //we're only setting up default templates for the default pack or for ticketing message type.
 		}
 
@@ -119,7 +119,7 @@ Class  EE_Ticketing extends EE_Addon {
 	 * @return string new base path or url
 	 */
 	public static function get_ticketing_css_path_or_url( $base_path_or_url, $messenger, $message_type, $type, $variation, $url, $file_extension, $template_pack ) {
-		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || $messenger != 'html' ) {
+		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || $messenger != 'html' || $message_type != 'ticketing' ) {
 			return $base_path_or_url;
 		}
 
