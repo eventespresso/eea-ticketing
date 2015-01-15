@@ -79,8 +79,9 @@ class EED_Ticketing  extends EED_Messages {
 			return;
 		}
 
+
 		EE_Registry::instance()->load_helper( 'MSG_Template' );
-		if ( EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
+		if ( EEH_MSG_Template::is_mt_active( 'ticket_notice' ) && $registration->status_ID() == EEM_Registration::status_id_approved ) {
 			self::_load_controller();
 			self::$_EEMSG->send_message(
 				'ticket_notice',
@@ -123,7 +124,7 @@ class EED_Ticketing  extends EED_Messages {
 
 		$active_mts = self::$_EEMSG->get_active_message_types();
 
-		if ( in_array( 'ticket_notice', $active_mts ) )
+		if ( in_array( 'ticket_notice', $active_mts ) && $registration->status_ID() == EEM_Registration::status_id_approved )
 			self::$_EEMSG->send_message( 'ticket_notice', $data );
 
 		return; //if we get here then there is no active message type for this status.
