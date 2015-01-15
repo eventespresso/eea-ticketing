@@ -35,7 +35,8 @@ Class  EE_Ticketing extends EE_Addon {
 					'use_wp_update' => FALSE
 					),
 				'message_types' => array(
-					'ticketing' => self::register_ticketing_message_type()
+					'ticketing' => self::register_ticketing_message_type(),
+					'ticket_notice' => self::register_ticket_notice()
 					)
 			)
 		);
@@ -45,6 +46,7 @@ Class  EE_Ticketing extends EE_Addon {
 		add_filter( 'FHEE__EE_Shortcodes__parser_after', array( 'EE_Ticketing', 'register_new_shortcode_parsers'), 10, 5 );
 		add_filter( 'FHEE__EE_Messages_Validator__get_specific_shortcode_excludes', array( 'EE_Ticketing', 'exclude_new_shortcodes' ), 10, 3 );
 
+		self::_add_admin_page_filters();
 		self::_add_template_pack_filters();
 	}
 
@@ -65,6 +67,90 @@ Class  EE_Ticketing extends EE_Addon {
 
 
 
+
+	/**
+	 * Take care of adding all filters for admin page stuff.
+	 *
+	 * @since 1.0.0
+	 */
+	protected static function _add_admin_page_filters() {
+		//add resend_ticket_notice action to registration list table.
+		add_filter( 'FHEE__EE_Admin_List_Table___action_string__action_items', array( 'EE_Ticketing', 'resend_ticket_notice_trigger' ), 10, 3 );
+
+		//filter the registrations list table route so we can add the route for
+		add_filter( 'FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes', array( 'EE_Ticketing', 'additional_reg_page_routes' ), 10, 2 );
+	}
+
+
+
+
+	/**
+	 *  call back for FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes
+	 *  used to add additional routes to the registrations admin page.
+	 *
+	 * @param array        $routes     Routes array
+	 * @param EE_Admin_Page $admin_page
+	 *
+	 * @return array        $routes with the additional routes added.
+	 */
+	public static function additional_reg_page_routes( $routes, EE_Admin_Page $admin_page ) {
+		$routes['resend_ticket_notice'] = array(
+			'func' => array( 'EE_Ticketing', 'resend_ticket_notice'),
+			'capability' => 'ee_send_message',
+			'noheader' => true
+			);
+		return $routes;
+	}
+
+
+
+
+
+	/**
+	 * This is called by the resend_ticket_notice route in the registration admin.
+	 * Processes the resend ticket notice action.
+	 *
+	 * @param EE_Admin_Page $admin_page
+	 *
+	 * @return void
+	 */
+	public static function resend_ticket_notice( $admin_page ) {
+		do_action( 'process_resend_ticket_notice', $admin_page );
+	}
+
+
+
+
+	/**
+	 * callback for FHEE__EE_Admin_List_Table___action_string__action_items used
+	 * to setup the resend ticket notice trigger.
+	 *
+	 * @param string              $action_items original action items
+	 * @param EE_Admin_List_Table $list_table
+	 *
+	 * @return string              action items with any additional things.
+	 */
+	public static function resend_ticket_notice_trigger( $action_items, $item, EE_Admin_List_Table $list_table ) {
+		EE_Registry::instance()->load_helper( 'MSG_Template' );
+		if ( ! EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
+			return $action_items;
+		}
+		if ( $list_table instanceof EE_Registrations_List_Table ) {
+			EE_Registry::instance()->load_helper( 'URL' );
+			$resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce( array( 'action' => 'resend_ticket_notice', '_REG_ID' => $item->ID() ), admin_url( 'admin.php?page=espresso_registrations' ) );
+			$resend_tkt_notice_lnk = EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_resend_ticket_notice', $item->ID() ) ? '
+<li>
+	<a href="'.$resend_ticket_notice_url.'" title="' . __( 'Resend Ticket Notice', 'event_espresso' ) . '" class="tiny-text">
+		<div class="dashicons dashicons-tickets-alt"></div>
+	</a>
+</li>' : '';
+			return $action_items . $resend_tkt_notice_lnk;
+		}
+		return $action_items;
+	}
+
+
+
 	/**
 	 * Adds the ticketing message type to the supports array for the default template pack.
 	 *
@@ -75,6 +161,7 @@ Class  EE_Ticketing extends EE_Addon {
 	 */
 	public static function register_supports_for_default_template_pack( $supports ) {
 		$supports['html'][] = 'ticketing';
+		$supports['email'][] = 'ticket_notice';
 		return $supports;
 	}
 
@@ -93,8 +180,8 @@ Class  EE_Ticketing extends EE_Addon {
 	 * @return string The new base path.
 	 */
 	public static function register_base_path_for_ticketing_templates( $base_path, $messenger, $message_type, $field, $context, $template_pack ) {
-		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ! $message_type instanceof EE_Ticketing_message_type ) {
-			return $base_path; //we're only setting up default templates for the default pack or for ticketing message type.
+		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ( ! $message_type instanceof EE_Ticketing_message_type && ! $message_type instanceof EE_Ticket_Notice_message_type ) ) {
+			return $base_path; //we're only setting up default templates for the default pack or for ticketing message type or ticket notice message type.
 		}
 
 		return EE_TICKETING_PATH . 'core/messages/templates/';
@@ -152,6 +239,21 @@ Class  EE_Ticketing extends EE_Addon {
 				),
 			'messengers_to_activate_with' => array( 'html' ),
 			'messengers_to_validate_with' => array( 'html' ),
+			'force_activation' => true
+			);
+		return $setup_args;
+	}
+
+
+
+	public static function register_ticket_notice() {
+		$setup_args = array(
+			'mtfilename' => 'EE_Ticket_Notice_message_type.class.php',
+			'autoloadpaths' => array(
+				EE_TICKETING_PATH . 'core/messages/'
+				),
+			'messengers_to_activate_with' => array( 'email' ),
+			'messengers_to_validate_with' => array( 'email' ),
 			'force_activation' => true
 			);
 		return $setup_args;

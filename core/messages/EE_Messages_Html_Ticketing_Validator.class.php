@@ -8,7 +8,7 @@
 if ( ! defined('EVENT_ESPRESSO_VERSION')) exit('No direct script access allowed');
 
 /**
- * Holds any special validation rules for template fields with Email messenger and Newsletter
+ * Holds any special validation rules for template fields with HTML messenger and Ticketing
  * message type.
  *
  *
