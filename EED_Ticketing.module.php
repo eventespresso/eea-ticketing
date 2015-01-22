@@ -33,7 +33,7 @@ class EED_Ticketing  extends EED_Messages {
 		add_action( 'AHEE__EE_Registration_Processor__trigger_registration_update_notifications', array( 'EED_Ticketing', 'maybe_ticket_notice' ), 10, 2 );
 
 		//add trigger  for ticket notice EE4.5-
-		if ( version_compare( '4.6.0', EVENT_ESPRESSO_VERSION ) ) {
+		if ( version_compare( '4.6.0.rc.000', EVENT_ESPRESSO_VERSION ) !== 1 ) {
 			add_action( 'AHEE__EE_Transaction__finalize__all_transaction', array( 'EED_Ticketing', 'maybe_ticket_notice_old' ), 10, 3 );
 		}
 
@@ -54,7 +54,7 @@ class EED_Ticketing  extends EED_Messages {
 		add_action( 'process_resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ) );
 
 		//add trigger  for ticket notice EE4.5-
-		if ( version_compare( '4.6.0', EVENT_ESPRESSO_VERSION ) ) {
+		if ( version_compare( '4.6.0.rc.000', EVENT_ESPRESSO_VERSION ) !== 1 ) {
 			add_action( 'AHEE__EE_Transaction__finalize__all_transaction', array( 'EED_Ticketing', 'maybe_ticket_notice_old' ), 10, 3 );
 		}
 	}
