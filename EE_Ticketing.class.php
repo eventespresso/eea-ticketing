@@ -299,7 +299,7 @@ Class  EE_Ticketing extends EE_Addon {
 					'</ul></p>';
 			$shortcodes['[GRAVATAR_*]'] = __('This shortcode will grab the email address attached to the registration and use that to attempt to grab a gravatar image.  If none is found then whatever is set in your WordPress settings for Default Avatar will be used. You can include what you want the dimensions of the gravatar to be by including params in the folowing format: "d=40".  So [GRAVATAR_* d=40] will parse to a gravatar image that is 40 pixels wide by 40 pixels high.', 'event_espresso');
 			$shortcodes['[BARCODE_*]'] = __('This shortcode is used to generate a custom barcode for the ticket instead of a qrcode.  There are a number of different options for the barcode:') . '<p></ul>' .
-				'<li><strong>w</strong>:' . __('Used to set the width (default is 2). [BARCODE_* w=20]', 'event_espresso') . '</li>' .
+				'<li><strong>w</strong>:' . __('Used to set the width (default is 1). [BARCODE_* w=20]', 'event_espresso') . '</li>' .
 				'<li><strong>h</strong>:' . __('Used to set the height (default is 70). [BARCODE_* h=50]', 'event_espresso') . '</li>' .
 				'<li><strong>type</strong>:' . __('Used to set the barcode type (default is code93). [BARCODE_* type=code93].  There are 4 different types you can choose from:', 'event_espresso') . '<ul>' .
 					'<li>code39</li>' .
@@ -307,8 +307,8 @@ Class  EE_Ticketing extends EE_Addon {
 					'<li>code128</li>' .
 					'<li>datamatrix</li>' .
 					'</li></ul>' .
-				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #FFFFFF [white] ). [BARCODE_* bgcolor=#FFFFFF]', 'event_espresso') . '</li>' .
-				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #000000 [black] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #000000 [black] ). [BARCODE_* bgcolor=#000000]', 'event_espresso') . '</li>' .
+				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #FFFFFF [white] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
 				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
 				'<li><strong>output_type</strong>:' .
 					__('Used to set the output type for the generated barcode (default is svg).  Can be either svg, canvas, bmp, or css. <em>Note: Some output types don\'t print well depending on the browser.  Make sure you verify printability.</em> [BARC0DE_* output_type=bmp]', 'event_espresso' ). '</li>' .
@@ -399,11 +399,11 @@ Class  EE_Ticketing extends EE_Addon {
 			} elseif ( strpos( $shortcode, '[BARCODE_*' ) !== FALSE ) {
 
 				//attributes
-				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 2;
+				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 1;
 				$height = isset( $attrs['h'] ) ? (int) $attrs['h'] : 70;
 				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
-				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#ffffff';
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000000';
+				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
 				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
 				$code_value = isset( $attrs['generate_for'] ) ? trim( $attrs['generate_for'] ) : 'short_code';
 				$reg_code = $code_value == 'long_code' ? $registration->reg_url_link() : $registration->reg_code();
