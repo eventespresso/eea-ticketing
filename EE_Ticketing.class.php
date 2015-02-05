@@ -22,7 +22,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'Ticketing',
 			array(
 				'version' => EE_TICKETING_VERSION,
-				'min_core_version' => '4.5.0.dev.000',
+				'min_core_version' => '4.6.0.alpha.000',
 				'main_file_path' => EE_TICKETING_PLUGIN_FILE,
 				'autoloader_paths' => array(
 					'EE_Ticketing' 						=> EE_TICKETING_PATH . 'EE_Ticketing.class.php'
