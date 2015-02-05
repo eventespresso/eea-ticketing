@@ -24,19 +24,13 @@ class EED_Ticketing  extends EED_Messages {
 	/**
 	 *  set_hooks - for hooking into EE Core, other modules, etc
 	 *
-	 *  @since 4.5.0
+	 *  @since 1.0.0
 	 *
 	 *  @return 	void
 	 */
 	public static function set_hooks() {
-		//add trigger for ticket notice EE4.6+
+		//add trigger for ticket notice
 		add_action( 'AHEE__EE_Registration_Processor__trigger_registration_update_notifications', array( 'EED_Ticketing', 'maybe_ticket_notice' ), 10, 2 );
-
-		//add trigger  for ticket notice EE4.5-
-		if ( version_compare( '4.6.0.rc.000', EVENT_ESPRESSO_VERSION ) !== 1 ) {
-			add_action( 'AHEE__EE_Transaction__finalize__all_transaction', array( 'EED_Ticketing', 'maybe_ticket_notice_old' ), 10, 3 );
-		}
-
 		add_action( 'process_resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ) );
 
 		self::_register_routes();
@@ -52,11 +46,6 @@ class EED_Ticketing  extends EED_Messages {
 	public static function set_hooks_admin() {
 		add_action( 'AHEE__EE_Registration_Processor__trigger_registration_update_notifications', array( 'EED_Ticketing', 'maybe_ticket_notice' ), 10, 2 );
 		add_action( 'process_resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ) );
-
-		//add trigger  for ticket notice EE4.5-
-		if ( version_compare( '4.6.0.rc.000', EVENT_ESPRESSO_VERSION ) !== 1 ) {
-			add_action( 'AHEE__EE_Transaction__finalize__all_transaction', array( 'EED_Ticketing', 'maybe_ticket_notice_old' ), 10, 3 );
-		}
 	}
 
 
@@ -65,7 +54,6 @@ class EED_Ticketing  extends EED_Messages {
 	/**
 	 * This is the trigger for the ticket notice message type.  Decides whether to send a ticket
 	 * notice message or not.
-	 * Note: this method is only called when Event Espresso version 4.6.0+ is in use.
 	 *
 	 * @param EE_Registration $registration
 	 * @param array           $extra_details extra details coming from the transaction
@@ -89,45 +77,6 @@ class EED_Ticketing  extends EED_Messages {
 				);
 		}
 		return;
-	}
-
-
-
-	/**
-	 * Trigger for Ticket Notice messages in pre 4.6.0 versions of EE core. (this method will be
-	 * deprecated at some point in the future when ticketing no longer supports 4.5.0.
-	 * Note that what registration message type is sent depends on what the reg status is for
-	 * the registrations on the incoming transaction.
-	 * @param  EE_Transaction $transaction
-	 * @param  array $reg_msg
-	 * @param  bool $from_admin
-	 * @return void
-	 */
-	public static function maybe_ticket_notice_old( EE_Transaction $transaction, $reg_msg, $from_admin ) {
-
-		//for now we're ONLY doing this from frontend UNLESS we have the toggle to send.
-		if ( $from_admin ) {
-			$messages_toggle = !empty( $_REQUEST['txn_reg_status_change']['send_notifications'] ) && $_REQUEST['txn_reg_status_change']['send_notifications'] ? TRUE : FALSE;
-			if ( ! $messages_toggle )
-				return; //no messages sent please.
-		}
-		//next let's only send out notifications if a registration was created OR if the registration status was updated to approved
-		if ( ! $reg_msg['new_reg'] && ! $reg_msg['to_approved'] )
-			return;
-
-		$data = array( $transaction, NULL );
-
-		//let's get the first related reg on the transaction since we can use its status to determine what message type gets sent.
-		$registration = $transaction->get_first_related('Registration');
-
-		self::_load_controller();
-
-		$active_mts = self::$_EEMSG->get_active_message_types();
-
-		if ( in_array( 'ticket_notice', $active_mts ) && $registration->status_ID() == EEM_Registration::status_id_approved )
-			self::$_EEMSG->send_message( 'ticket_notice', $data );
-
-		return; //if we get here then there is no active message type for this status.
 	}
 
 
@@ -180,7 +129,7 @@ class EED_Ticketing  extends EED_Messages {
 	/**
 	 * All the message triggers done by route go in here.
 	 *
-	 * @since 4.5.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
