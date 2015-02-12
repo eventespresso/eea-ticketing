@@ -77,6 +77,9 @@ Class  EE_Ticketing extends EE_Addon {
 		//add resend_ticket_notice action to registration list table.
 		add_filter( 'FHEE__EE_Admin_List_Table___action_string__action_items', array( 'EE_Ticketing', 'resend_ticket_notice_trigger' ), 10, 3 );
 
+		//add icons to legend
+		add_filter( 'FHEE__EE_Admin_Page___display_legend__items', array( 'EE_Ticketing', 'add_icons_to_list_table_legend' ), 10, 2 );
+
 		//filter the registrations list table route so we can add the route for
 		add_filter( 'FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes', array( 'EE_Ticketing', 'additional_reg_page_routes' ), 10, 2 );
 	}
@@ -123,7 +126,7 @@ Class  EE_Ticketing extends EE_Addon {
 
 	/**
 	 * callback for FHEE__EE_Admin_List_Table___action_string__action_items used
-	 * to setup the resend ticket notice trigger.
+	 * to setup the resend ticket notice trigger, and the ticket display trigger.
 	 *
 	 * @param string              $action_items original action items
 	 * @param EE_Admin_List_Table $list_table
@@ -132,22 +135,84 @@ Class  EE_Ticketing extends EE_Addon {
 	 */
 	public static function resend_ticket_notice_trigger( $action_items, $item, EE_Admin_List_Table $list_table ) {
 		EE_Registry::instance()->load_helper( 'MSG_Template' );
-		if ( ! EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
+		if ( ! EEH_MSG_Template::is_mt_active( 'ticket_notice' ) && ! EEH_MSG_Template::is_mt_active('ticketing') ) {
 			return $action_items;
 		}
+
 		if ( $list_table instanceof EE_Registrations_List_Table ) {
 			EE_Registry::instance()->load_helper( 'URL' );
 			$resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce( array( 'action' => 'resend_ticket_notice', '_REG_ID' => $item->ID() ), admin_url( 'admin.php?page=espresso_registrations' ) );
-			$resend_tkt_notice_lnk = EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_resend_ticket_notice', $item->ID() ) ? '
+			$resend_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticket_notice' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_resend_ticket_notice', $item->ID() ) ? '
 <li>
 	<a href="'.$resend_ticket_notice_url.'" title="' . __( 'Resend Ticket Notice', 'event_espresso' ) . '" class="tiny-text">
+		<div class="dashicons dashicons-email"></div>
+	</a>
+</li>' : '';
+			$display_ticket_notice_url = self::_get_ticket_url( $item );
+			$display_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticketing' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_display_ticket', $item->ID() ) ? '
+<li>
+	<a href="'.$display_ticket_notice_url.'" title="' . __( 'Display Ticket for Registration', 'event_espresso' ) . '" class="tiny-text">
 		<div class="dashicons dashicons-tickets-alt"></div>
 	</a>
 </li>' : '';
-			return $action_items . $resend_tkt_notice_lnk;
+			return $action_items . $resend_tkt_notice_lnk . $display_tkt_notice_lnk;
+		}
+
+		if ( $list_table instanceof EE_Admin_Transactions_List_Table ) {
+			$display_ticket_notice_url = self::_get_txn_tickets_url( $item->primary_registration() );
+			$display_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticketing' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_transactions_display_ticket', $item->ID() ) ? '
+<li>
+	<a href="'.$display_ticket_notice_url.'" title="' . __( 'Display Ticket for Registration', 'event_espresso' ) . '" class="tiny-text">
+		<div class="dashicons dashicons-tickets-alt"></div>
+	</a>
+</li>' : '';
+			return $action_items . $display_tkt_notice_lnk;
 		}
 		return $action_items;
 	}
+
+
+
+
+	/**
+	 * This hooks into FHEE__EE_Admin_Page___display_legend__items to add new legend
+	 * items for action icons.
+	 *
+	 * @param array        $icon_items current icon items
+	 * @param EE_Admin_Page $admin_page
+	 * @return array new icon_items.
+	 */
+	public static function add_icons_to_list_table_legend( $icon_items, EE_Admin_Page $admin_page ) {
+		EE_Registry::instance()->load_helper( 'MSG_Template' );
+		if ( $admin_page instanceof Extend_Registrations_Admin_Page ) {
+			if ( EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
+				$icon_items['ticket_notice'] = array(
+					'class' => 'dashicons dashicons-email ee-icon-size-16',
+					'desc' => __('Resend Ticket Notice', 'event_espresso')
+					);
+			}
+
+			if ( EEH_MSG_Template::is_mt_active( 'ticketing' ) ) {
+				$icon_items['ticketing'] = array(
+					'class' => 'dashicons dashicons-tickets-alt ee-icon-size-16',
+					'desc' => __('View Ticket', 'event_espresso' )
+					);
+			}
+		}
+
+		if ( $admin_page instanceof Extend_Transactions_Admin_Page ) {
+			if ( EEH_MSG_Template::is_mt_active( 'ticketing' ) ) {
+				$icon_items['ticketing'] = array(
+					'class' => 'dashicons dashicons-tickets-alt ee-icon-size-16',
+					'desc' => __('View Ticket', 'event_espresso' )
+					);
+			}
+		}
+
+		return $icon_items;
+	}
+
+
 
 
 
@@ -465,16 +530,25 @@ Class  EE_Ticketing extends EE_Addon {
 				$transaction = $data->txn;
 				$reg = $data->reg_obj instanceof EE_Registration ? $data->reg_obj : $transaction->primary_registration();
 
-				$reg_url_link = $reg instanceof EE_Registration ? $reg->reg_url_link() : 'http://dummyurlforpreview.com';
+				$reg_url_link = $reg instanceof EE_Registration ? self::_get_txn_tickets_url( $reg ) : 'http://dummyurlforpreview.com';
 
-				$query_args = array(
-					'ee' => 'ee-txn-tickets-url',
-					'token' => $reg_url_link
-					);
-				$parsed = add_query_arg( $query_args, get_site_url() );
+				return $reg_url_link;
 			}
 		}
 		return $parsed;
+	}
+
+
+
+
+	protected static function _get_txn_tickets_url( EE_Registration $registration ) {
+		$reg_url_link = $registration->reg_url_link();
+
+		$query_args = array(
+			'ee' => 'ee-txn-tickets-url',
+			'token' => $reg_url_link
+			);
+		return add_query_arg( $query_args, get_site_url() );
 	}
 
 
