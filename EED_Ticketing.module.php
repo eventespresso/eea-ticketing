@@ -134,7 +134,7 @@ class EED_Ticketing  extends EED_Messages {
 	 * @return void
 	 */
 	protected static function _register_routes() {
-		EE_Config::register_route( __('ee-txn-tickets-url', 'event_espresso'), 'Ticketing', 'run' );
+		EE_Config::register_route( 'ee-txn-tickets-url', 'Ticketing', 'run' );
 		do_action( 'AHEE__EED_Ticketing___register_routes' );
 	}
 
