@@ -25,7 +25,9 @@
 </head>
 <body>
 	<div class="error-container">
-		<p><?php _e('Hi there,  no tickets are available for the registration attached to this url because the associated registration(s) are not approved. If you think this message is incorrect, please contact the site administrator.', 'event_espresso'); ?></p>
+		<p><?php printf( __('Hello,%s  Your ticket(s) are not available because your registration(s) are not
+approved. If you think this is incorrect, please contact the site
+administrator.', 'event_espresso'), '<br>' ); ?></p>
 	</div>
 </body>
 </html>
