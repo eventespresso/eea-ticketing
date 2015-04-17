@@ -391,6 +391,7 @@ Class  EE_Ticketing extends EE_Addon {
 
 		if ( $lib instanceof EE_Transaction_Shortcodes ) {
 			$shortcodes['[TXN_TICKETS_URL]'] = __('This shortcode generates the url for all tickets in a transaction.', 'event_espresso');
+			$shortcodes['[TXN_TICKETS_APPROVED_URL]'] = __('This shortcode generates the url for all tickets in a transaction. However, only tickets for approved registrations are generated via the url on this shortcode.', 'event_espresso');
 		}
 		return $shortcodes;
 	}
@@ -534,18 +535,37 @@ Class  EE_Ticketing extends EE_Addon {
 
 				return $reg_url_link;
 			}
+
+			if ( $shortcode == '[TXN_TICKETS_APPROVED_URL]' ) {
+				$transaction = $data->txn;
+				$reg = $data->reg_obj instanceof EE_Registration ? $data->reg_obj : $transaction->primary_registration();
+
+				$reg_url_link = $reg instanceof EE_Registration ? self::_get_txn_tickets_url( $reg, true ) : 'http://dummyurlforpreview.com';
+
+				return $reg_url_link;
+			}
 		}
 		return $parsed;
 	}
 
 
 
-
-	protected static function _get_txn_tickets_url( EE_Registration $registration ) {
+	/**
+	 * Gets the url replacing the transaction tickets messages shortcode.
+	 * [TXN_TICKETS_URL]: $approved_only = false
+	 * [TXN_TICKETS_APPROVED_URL] : $approved_only = true
+	 *
+	 * @param EE_Registration $registration
+	 * @param bool            $approved_only whether to generate the url that returns only tickets for approved
+	 *                                       		   registrations.
+	 *
+	 * @return string
+	 */
+	protected static function _get_txn_tickets_url( EE_Registration $registration, $approved_only = false ) {
 		$reg_url_link = $registration->reg_url_link();
 
 		$query_args = array(
-			'ee' => 'ee-txn-tickets-url',
+			'ee' => $approved_only ? 'ee-txn-tickets-approved-url' : 'ee-txn-tickets-url',
 			'token' => $reg_url_link
 			);
 		return add_query_arg( $query_args, get_site_url() );
