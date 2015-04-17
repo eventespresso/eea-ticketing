@@ -75,6 +75,12 @@ class EED_Ticketing  extends EED_Messages {
 		$registration_processor = EE_Registry::instance()->load_class( 'Registration_Processor' );
 		$data = method_exists( $registration_processor, 'generate_ONE_registration_from_line_item' ) ? array( $registration->transaction(), NULL, EEM_Registration::status_id_approved ) : array( $registration->transaction(), NULL );
 
+		//if we're not in the MER branch then we also consider the status of the  primary registration on
+		//whether to continue or not.
+		if ( ! method_exists( $registration_processor, 'generate_ONE_registration_from_line_item' ) && $registration->status_ID() != EEM_Registration::status_id_approved ) {
+			return;
+		}
+
 		EE_Registry::instance()->load_helper( 'MSG_Template' );
 		if ( EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
 			self::_load_controller();
