@@ -106,7 +106,7 @@ class EED_Ticketing  extends EED_Messages {
 
 		//if no reg object then error
 		if ( ! $reg instanceof EE_Registration ) {
-			EE_Error::add_error( sprintf( __('Unable to retrieve a registration object for the given reg id (%s)', 'event_espresso'), $req_data['_REG_ID'] ), __FILE__, __FUNCTION__, __LINE__ );
+			EE_Error::add_error( sprintf( __('Unable to retrieve a registration object for the given reg id (%s)', 'event_espresso'), absint( $_REQUEST['_REG_ID'] ) ), __FILE__, __FUNCTION__, __LINE__ );
 			$success = false;
 		}
 
