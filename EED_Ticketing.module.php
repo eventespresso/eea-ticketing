@@ -125,7 +125,7 @@ class EED_Ticketing  extends EED_Messages {
 				//branch at the time of this work.
 				$registration_processor = EE_Registry::instance()->load_class( 'Registration_Processor' );
 				$data = method_exists( $registration_processor, 'generate_ONE_registration_from_line_item' ) ? array( $reg, EEM_Registration::status_id_approved ) :$reg;
-				$success = self::$_EEMSG->send_message( 'ticket_notice', $reg );
+				$success = self::$_EEMSG->send_message( 'ticket_notice', $data );
 			}
 
 		}
