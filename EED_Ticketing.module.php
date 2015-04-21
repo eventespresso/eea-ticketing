@@ -188,7 +188,6 @@ class EED_Ticketing  extends EED_Messages {
 
 	protected function _generate_tickets( $approved_only = false ) {
 		//declare vars
-		$registrations = array();
 		$messages = array();
 
 		//get the params from the request
@@ -209,54 +208,49 @@ class EED_Ticketing  extends EED_Messages {
 			return; //get out we need a valid registration.
 		}
 
-
+		$transaction = $registration->transaction();
 		//if primary registration then we grab all registrations and loop through to generate the html.  If not primary, then we just use the existing registration and throw that ticket up.  Note this is also conditional on the approved_only flag.  If that is true and there are no approved registrations for the requested route, then we throw up error screen.
 		$show_error_screen = false;
 		if ( ! $registration->is_primary_registrant() ) {
-			if ( $approved_only && $registration->status_ID() != EEM_Registration::status_id_approved ) {
-				$show_error_screen = true;
-			} else {
-				self::$_EEMSG->send_message( 'ticketing', $registration, 'html', '', 'registrant' );
-			}
+			//need to get all registrations attached to the contact for this registrant that are for this transaction.
+			$registrations = $transaction instanceof EE_Transaction ? $transaction->registrations( array( array( 'ATT_ID' => $registration->attendee() ) ) ) : array();
 		} else {
 			//get all registrations for transaction
-			$transaction = $registration->transaction();
-
 			$registrations = $transaction instanceof EE_Transaction ? $transaction->registrations() : array();
+		}
 
-			foreach ( $registrations as $reg ) {
-				if ( $approved_only && $reg->status_ID() != EEM_Registration::status_id_approved ) {
-					continue;
-				}
-				$message = self::$_EEMSG->send_message( 'ticketing', $reg, 'html', '', 'registrant', FALSE );
-				if ( $message ) {
-					$messages[] = $message;
+		foreach ( $registrations as $reg ) {
+			if ( $approved_only && $reg->status_ID() != EEM_Registration::status_id_approved ) {
+				continue;
+			}
+			$message = self::$_EEMSG->send_message( 'ticketing', $reg, 'html', '', 'registrant', FALSE );
+			if ( $message ) {
+				$messages[] = $message;
+			}
+		}
+
+
+		//now let's consolidate the $message objects into one message object for the actual displayed template
+		$content = '';
+		if ( ! empty( $messages ) ) {
+			$final_msg = new stdClass();
+			foreach ( $messages as $message ) {
+				foreach ( $message as $msg ) {
+					$final_msg->template_pack = ! empty( $msg->template_pack ) ? $msg->template_pack : null;
+					$final_msg->variation = ! empty( $msg->variation ) ? $msg->variation : null;
+					$content .= $msg->content;
 				}
 			}
 
+			$final_msg->subject = sprintf( __( 'All tickets for the transaction: %d', 'event_espresso' ), $transaction->ID() );
+			$final_msg->content = $content;
+			$final_msg->template_pack =  ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack( 'default' ) : $final_msg->template_pack;
+			$final_msg->variation = empty( $final_msg->variation ) ? 'default' : $final_msg->variation;
 
-			//now let's consolidate the $message objects into one message object for the actual displayed template
-			$content = '';
-			if ( ! empty( $messages ) ) {
-				$final_msg = new stdClass();
-				foreach ( $messages as $message ) {
-					foreach ( $message as $msg ) {
-						$final_msg->template_pack = ! empty( $msg->template_pack ) ? $msg->template_pack : null;
-						$final_msg->variation = ! empty( $msg->variation ) ? $msg->variation : null;
-						$content .= $msg->content;
-					}
-				}
-
-				$final_msg->subject = sprintf( __( 'All tickets for the transaction: %d', 'event_espresso' ), $transaction->ID() );
-				$final_msg->content = $content;
-				$final_msg->template_pack =  ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack( 'default' ) : $final_msg->template_pack;
-				$final_msg->variation = empty( $final_msg->variation ) ? 'default' : $final_msg->variation;
-
-				//now we can trigger that message setup
-				self::$_EEMSG->send_message_with_messenger_only( 'html', 'ticketing', $final_msg );
-			} else {
-				$show_error_screen = true;
-			}
+			//now we can trigger that message setup
+			self::$_EEMSG->send_message_with_messenger_only( 'html', 'ticketing', $final_msg );
+		} else {
+			$show_error_screen = true;
 		}
 
 		if ( $show_error_screen && $approved_only ) {
