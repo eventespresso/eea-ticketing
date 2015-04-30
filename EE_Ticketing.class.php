@@ -372,8 +372,8 @@ Class  EE_Ticketing extends EE_Addon {
 					'<li>code128</li>' .
 					'<li>datamatrix</li>' .
 					'</li></ul>' .
-				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #000000 [black] ). [BARCODE_* bgcolor=#000000]', 'event_espresso') . '</li>' .
-				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #FFFFFF [white] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #FFFFF [white] ). [BARCODE_* bgcolor=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #000000 [black] ). [BARCODE_* color=#000000]', 'event_espresso') . '</li>' .
 				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
 				'<li><strong>output_type</strong>:' .
 					__('Used to set the output type for the generated barcode (default is svg).  Can be either svg, canvas, bmp, or css. <em>Note: Some output types don\'t print well depending on the browser.  Make sure you verify printability.</em> [BARC0DE_* output_type=bmp]', 'event_espresso' ). '</li>' .
@@ -440,7 +440,7 @@ Class  EE_Ticketing extends EE_Addon {
 				$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 110;
 
 				//color?
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#FFF';
 
 				//mode?
 				$mode = isset( $attrs['mode'] ) ? intval( $attrs['mode'] ) : 0;
@@ -468,8 +468,8 @@ Class  EE_Ticketing extends EE_Addon {
 				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 1;
 				$height = isset( $attrs['h'] ) ? (int) $attrs['h'] : 70;
 				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
-				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
+				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#ffffff';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000000';
 				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
 				$code_value = isset( $attrs['generate_for'] ) ? trim( $attrs['generate_for'] ) : 'short_code';
 				$reg_code = $code_value == 'long_code' ? $registration->reg_url_link() : $registration->reg_code();
