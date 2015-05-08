@@ -440,7 +440,7 @@ Class  EE_Ticketing extends EE_Addon {
 				$d = isset( $attrs['d'] ) ? intval( $attrs['d'] ) : 110;
 
 				//color?
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#FFF';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000';
 
 				//mode?
 				$mode = isset( $attrs['mode'] ) ? intval( $attrs['mode'] ) : 0;
