@@ -480,8 +480,10 @@ Class  EE_Ticketing extends EE_Addon {
 					$output_type = 'svg';
 				}
 
+				$container_type = $output_type == 'canvas' ? 'canvas' : 'div';
+
 				//setup the barcode params in the dom
-				$parsed = '<div class="ee-barcode"><span class="ee-barcode-width" style="display:none;">' . $width . '</span>';
+				$parsed = '<' . $container_type . ' class="ee-barcode"><span class="ee-barcode-width" style="display:none;">' . $width . '</span>';
 				$parsed .= '<span class="ee-barcode-reg_url_link" style="display:none;">' . $reg_code . '</span>';
 				$parsed .= '<span class="ee-barcode-color" style="display:none;">' . $color . '</span>';
 				$parsed .= '<span class="ee-barcode-type" style="display:none;">' . $type . '</span>';
@@ -489,7 +491,7 @@ Class  EE_Ticketing extends EE_Addon {
 				$parsed .= '<span class="ee-barcode-bgcolor" style="display:none;">' . $bgcolor . '</span>';
 				$parsed .= '<span class="ee-barcode-fsize" style="display:none;">' . $fsize . '</span>';
 				$parsed .= '<span class="ee-barcode-output-type" style="display:none;">' . $output_type . '</span>';
-				$parsed .= '</div>';
+				$parsed .= '</' . $container_type . '>';
 
 			}
 		} elseif ( $lib instanceof EE_Attendee_Shortcodes ) {

@@ -22,12 +22,6 @@ jQuery(document).ready(function($) {
 		bc_settings.fontSize = parseInt( $('.ee-barcode-fsize', this ).text(), 10 );
 		bc_settings.output= $('.ee-barcode-output-type', this ).text();
 		bc_type = $('.ee-barcode-type', this ).text();
-		//if barcode type is canvas then we need to insert a canvas element and send that in as the container.
-		if ( bc_type == 'canvas' ) {
-			$(this).appendTo( '<canvas></canvas>' );
-			container = $(this).find( 'canvas' );
-		}
-
 		container.barcode( { code: barcode_val }, bc_type, bc_settings );
 	});
 
