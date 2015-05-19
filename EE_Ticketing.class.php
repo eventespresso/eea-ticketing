@@ -372,8 +372,8 @@ Class  EE_Ticketing extends EE_Addon {
 					'<li>code128</li>' .
 					'<li>datamatrix</li>' .
 					'</li></ul>' .
-				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #000000 [black] ). [BARCODE_* bgcolor=#000000]', 'event_espresso') . '</li>' .
-				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #FFFFFF [white] ). [BARCODE_* color=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>bgcolor</strong>:' . __('Used to set the background color of the barcode (default is #FFFFF [white] ). [BARCODE_* bgcolor=#FFFFFF]', 'event_espresso') . '</li>' .
+				'<li><strong>color</strong>:' . __('Used to set the foreground color of the barcode (default is #000000 [black] ). [BARCODE_* color=#000000]', 'event_espresso') . '</li>' .
 				'<li><strong>fsize</strong>:' . __('Used to set the fontsize for the barcode (default is 10). [BARCODE_* fsize=10]', 'event_espresso') . '</li>' .
 				'<li><strong>output_type</strong>:' .
 					__('Used to set the output type for the generated barcode (default is svg).  Can be either svg, canvas, bmp, or css. <em>Note: Some output types don\'t print well depending on the browser.  Make sure you verify printability.</em> [BARC0DE_* output_type=bmp]', 'event_espresso' ). '</li>' .
@@ -391,6 +391,7 @@ Class  EE_Ticketing extends EE_Addon {
 
 		if ( $lib instanceof EE_Transaction_Shortcodes ) {
 			$shortcodes['[TXN_TICKETS_URL]'] = __('This shortcode generates the url for all tickets in a transaction.', 'event_espresso');
+			$shortcodes['[TXN_TICKETS_APPROVED_URL]'] = __('This shortcode generates the url for all tickets in a transaction. However, only tickets for approved registrations are generated via the url on this shortcode.', 'event_espresso');
 		}
 		return $shortcodes;
 	}
@@ -467,8 +468,8 @@ Class  EE_Ticketing extends EE_Addon {
 				$width = isset( $attrs['w'] ) ? (int) $attrs['w'] : 1;
 				$height = isset( $attrs['h'] ) ? (int) $attrs['h'] : 70;
 				$type = isset( $attrs['type'] ) ? $attrs['type'] : 'code93';
-				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#000000';
-				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#ffffff';
+				$bgcolor = isset( $attrs['bgcolor'] ) ? $attrs['bgcolor'] : '#ffffff';
+				$color = isset( $attrs['color'] ) ? $attrs['color'] : '#000000';
 				$fsize = isset( $attrs['fsize'] ) ? (int) $attrs['fsize'] : 10;
 				$code_value = isset( $attrs['generate_for'] ) ? trim( $attrs['generate_for'] ) : 'short_code';
 				$reg_code = $code_value == 'long_code' ? $registration->reg_url_link() : $registration->reg_code();
@@ -534,18 +535,37 @@ Class  EE_Ticketing extends EE_Addon {
 
 				return $reg_url_link;
 			}
+
+			if ( $shortcode == '[TXN_TICKETS_APPROVED_URL]' ) {
+				$transaction = $data->txn;
+				$reg = $data->reg_obj instanceof EE_Registration ? $data->reg_obj : $transaction->primary_registration();
+
+				$reg_url_link = $reg instanceof EE_Registration ? self::_get_txn_tickets_url( $reg, true ) : 'http://dummyurlforpreview.com';
+
+				return $reg_url_link;
+			}
 		}
 		return $parsed;
 	}
 
 
 
-
-	protected static function _get_txn_tickets_url( EE_Registration $registration ) {
+	/**
+	 * Gets the url replacing the transaction tickets messages shortcode.
+	 * [TXN_TICKETS_URL]: $approved_only = false
+	 * [TXN_TICKETS_APPROVED_URL] : $approved_only = true
+	 *
+	 * @param EE_Registration $registration
+	 * @param bool            $approved_only whether to generate the url that returns only tickets for approved
+	 *                                       		   registrations.
+	 *
+	 * @return string
+	 */
+	protected static function _get_txn_tickets_url( EE_Registration $registration, $approved_only = false ) {
 		$reg_url_link = $registration->reg_url_link();
 
 		$query_args = array(
-			'ee' => 'ee-txn-tickets-url',
+			'ee' => $approved_only ? 'ee-txn-tickets-approved-url' : 'ee-txn-tickets-url',
 			'token' => $reg_url_link
 			);
 		return add_query_arg( $query_args, get_site_url() );
