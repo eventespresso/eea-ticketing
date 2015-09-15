@@ -31,7 +31,7 @@ class EED_Ticketing  extends EED_Messages {
 	public static function set_hooks() {
 		//add trigger for ticket notice
 		add_action( 'AHEE__EE_Registration_Processor__trigger_registration_update_notifications', array( 'EED_Ticketing', 'maybe_ticket_notice' ), 10, 2 );
-		add_action( 'process_resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ) );
+		add_action( 'AHEE__EE_Ticketing__resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ), 10, 2 );
 
 		self::_register_routes();
 	}
@@ -45,7 +45,8 @@ class EED_Ticketing  extends EED_Messages {
 	 */
 	public static function set_hooks_admin() {
 		add_action( 'AHEE__EE_Registration_Processor__trigger_registration_update_notifications', array( 'EED_Ticketing', 'maybe_ticket_notice' ), 10, 2 );
-		add_action( 'process_resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ) );
+		add_action( 'AHEE__EE_Ticketing__resend_ticket_notice', array( 'EED_Ticketing', 'process_resend_ticket_notice' ), 10, 2 );
+		add_action( 'AHEE__EE_Admin_Page___process_resend_registration', array( 'EED_Ticketing', 'process_resend_ticket_notice_from_registration_trigger' ), 10, 2);
 	}
 
 
@@ -93,8 +94,34 @@ class EED_Ticketing  extends EED_Messages {
 	}
 
 
+	/**
+	 * Callback for AHEE__EE_Admin_Page___process_resend_registration action hook
+	 *
+	 * @param bool  $success This indicates whether prior processing was successful (true) or not (false).
+	 * @param array $request The request data at time of execution.
+	 * @return bool Whether successful or not.
+	 */
+	public static function process_resend_ticket_notice_from_registration_trigger( $success, $request ) {
+		if ( $success ) {
+			$errors = false;
+			$original_request = $_REQUEST;
+			$reg_ids = isset( $request['_REG_ID'] ) ? $request['_REG_ID'] : null;
+			$reg_ids = is_array( $reg_ids ) ? $reg_ids : array( $reg_ids );
+			foreach ( $reg_ids as $reg_id ) {
+				$_REQUEST['_REG_ID'] = $reg_id;
+				$success = self::process_resend_ticket_notice( null, false );
+				if ( ! $success ) {
+					$errors = true;
+				}
+			}
+			//restore $_REQUEST to original for any other plugins hooking in later.
+			$_REQUEST = $original_request;
+			$success = $errors ? false : $success;
+		}
+		return $success;
+	}
 
-	public static function process_resend_ticket_notice( EE_Admin_Page $admin_page ) {
+	public static function process_resend_ticket_notice( $admin_page, $redirect = true ) {
 		$success = true;
 		if ( ! isset( $_REQUEST['_REG_ID'] ) ) {
 			EE_Error::add_error( __('Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.', 'event_espresso' ), __FILE__, __FUNCTION__, __LINE__ );
@@ -135,11 +162,19 @@ class EED_Ticketing  extends EED_Messages {
 			EE_Error::add_success( __( 'The message for this registration has been re-sent', 'event_espresso' ) );
 		}
 
-		//DONT' use the below code... just for reference on what to redirect to after things are done.
-		$query_args = isset($_REQUEST['redirect_to'] ) ? array('action' => $_REQUEST['redirect_to'], '_REG_ID' => $_REQUEST['_REG_ID'] ) : array(
-			'action' => 'default'
-			);
-		$admin_page->redirect_after_action(FALSE, '', '', $query_args, TRUE );
+		if ( $redirect && $admin_page instanceof EE_Admin_Page ) {
+			$query_args = isset( $_REQUEST['redirect_to'] ) ?
+				array(
+					'action'  => esc_url_raw( $_REQUEST['redirect_to'] ),
+					'_REG_ID' => esc_url( $_REQUEST['_REG_ID'] )
+				)
+				: array(
+					'action' => 'default'
+				);
+			$admin_page->redirect_after_action( false, '', '', $query_args, true );
+		} else {
+			return $success;
+		}
 	}
 
 

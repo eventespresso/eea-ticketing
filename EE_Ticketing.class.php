@@ -118,7 +118,7 @@ Class  EE_Ticketing extends EE_Addon {
 	 * @return void
 	 */
 	public static function resend_ticket_notice( $admin_page ) {
-		do_action( 'process_resend_ticket_notice', $admin_page );
+		do_action( 'AHEE__EE_Ticketing__resend_ticket_notice', $admin_page );
 	}
 
 
