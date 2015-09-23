@@ -1,6 +1,6 @@
 <?php
 /*
-  Plugin Name: Event Espresso - Ticketing (EE4+)
+  Plugin Name: Event Espresso - Ticketing (EE 4+)
   Plugin URI: http://www.eventespresso.com
   Description: This adds the ticketing message type to Event Espresso 4 which includes the ability to customize tickets that users will receive for the events.  Using the messages system you can create templates for various styles of tickets and assign them to whatever event you want to use that template for.  Also includes multiple bar code types for handling check-in scans at the door.  Users can either print out their tickets or display them on their mobile devices.
   Version: 1.0.4.rc.002
