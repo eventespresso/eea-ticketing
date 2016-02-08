@@ -102,7 +102,11 @@ class EED_Ticketing  extends EED_Messages {
 	 * @return bool Whether successful or not.
 	 */
 	public static function process_resend_ticket_notice_from_registration_trigger( $success, $request ) {
-		if ( $success ) {
+		if (
+			$success
+			&& isset( $request['action'] )
+			&& $request['action'] === 'approve_and_notify_registration'
+		) {
 			$errors = false;
 			$original_request = $_REQUEST;
 			$reg_ids = isset( $request['_REG_ID'] ) ? $request['_REG_ID'] : null;
