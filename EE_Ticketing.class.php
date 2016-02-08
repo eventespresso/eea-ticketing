@@ -139,15 +139,20 @@ Class  EE_Ticketing extends EE_Addon {
 			return $action_items;
 		}
 
-		if ( $list_table instanceof EE_Registrations_List_Table ) {
+		if ( $list_table instanceof EE_Registrations_List_Table && $item instanceof EE_Registration ) {
 			EE_Registry::instance()->load_helper( 'URL' );
-			$resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce( array( 'action' => 'resend_ticket_notice', '_REG_ID' => $item->ID() ), admin_url( 'admin.php?page=espresso_registrations' ) );
-			$resend_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticket_notice' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_resend_ticket_notice', $item->ID() ) ? '
+			$resend_tkt_notice_lnk = '';
+			//only display resend ticket notice link IF the registration is approved.
+			if ( $item->is_approved() ) {
+				$resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce( array( 'action' => 'resend_ticket_notice', '_REG_ID' => $item->ID() ), admin_url( 'admin.php?page=espresso_registrations' ) );
+				$resend_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticket_notice' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_resend_ticket_notice', $item->ID() ) ? '
 <li>
 	<a href="'.$resend_ticket_notice_url.'" title="' . __( 'Resend Ticket Notice', 'event_espresso' ) . '" class="tiny-text">
 		<div class="dashicons dashicons-email"></div>
 	</a>
 </li>' : '';
+			}
+
 			$display_ticket_notice_url = self::_get_ticket_url( $item );
 			$display_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticketing' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_display_ticket', $item->ID() ) ? '
 <li>
