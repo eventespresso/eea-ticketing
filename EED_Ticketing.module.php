@@ -128,16 +128,21 @@ class EED_Ticketing  extends EED_Messages {
 	public static function process_resend_ticket_notice( $admin_page, $redirect = true ) {
 		$success = true;
 		if ( ! isset( $_REQUEST['_REG_ID'] ) ) {
-			EE_Error::add_error( __('Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.', 'event_espresso' ), __FILE__, __FUNCTION__, __LINE__ );
+			EE_Error::add_error( __( 'Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.', 'event_espresso' ), __FILE__, __FUNCTION__, __LINE__ );
 			$success = false;
 		}
 
 		//get reg_object from reg_id
 		$reg = EE_Registry::instance()->load_model( 'Registration' )->get_one_by_ID( $_REQUEST['_REG_ID'] );
 
-		//if no reg object then error
+		//if no reg object then error.
 		if ( ! $reg instanceof EE_Registration ) {
-			EE_Error::add_error( sprintf( __('Unable to retrieve a registration object for the given reg id (%s)', 'event_espresso'), absint( $_REQUEST['_REG_ID'] ) ), __FILE__, __FUNCTION__, __LINE__ );
+			EE_Error::add_error( sprintf( __( 'Unable to retrieve a registration object for the given reg id (%s)', 'event_espresso' ), absint( $_REQUEST['_REG_ID'] ) ), __FILE__, __FUNCTION__, __LINE__ );
+			$success = false;
+		}
+
+		//if reg object is not approved then let's just skip now to avoid processing.
+		if ( ! $reg->is_approved() ) {
 			$success = false;
 		}
 
@@ -146,7 +151,7 @@ class EED_Ticketing  extends EED_Messages {
 			$active_mts = self::$_EEMSG->get_active_message_types();
 			if ( ! in_array( 'ticket_notice', $active_mts ) ) {
 				$success = false;
-				EE_Error::add_error( sprintf( __('Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.', 'event_espresso'), '<a href="' . admin_url('admin.php?page=espresso_messages&action=settings') . '">', '</a>' ), __FILE__, __FUNCTION__, __LINE__ );
+				EE_Error::add_error( sprintf( __( 'Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.', 'event_espresso' ), '<a href="' . admin_url( 'admin.php?page=espresso_messages&action=settings' ) . '">', '</a>' ), __FILE__, __FUNCTION__, __LINE__ );
 			}
 
 			if ( $success ) {
@@ -158,7 +163,6 @@ class EED_Ticketing  extends EED_Messages {
 				$data = method_exists( $registration_processor, 'generate_ONE_registration_from_line_item' ) ? array( $reg, EEM_Registration::status_id_approved ) :$reg;
 				$success = self::$_EEMSG->send_message( 'ticket_notice', $data );
 			}
-
 		}
 
 		if ( $success ) {
