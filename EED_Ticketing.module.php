@@ -107,20 +107,15 @@ class EED_Ticketing  extends EED_Messages {
 			&& isset( $request['action'] )
 			&& $request['action'] === 'approve_and_notify_registration'
 		) {
-			$errors = false;
 			$original_request = $_REQUEST;
 			$reg_ids = isset( $request['_REG_ID'] ) ? $request['_REG_ID'] : null;
 			$reg_ids = is_array( $reg_ids ) ? $reg_ids : array( $reg_ids );
 			foreach ( $reg_ids as $reg_id ) {
 				$_REQUEST['_REG_ID'] = $reg_id;
-				$success = self::process_resend_ticket_notice( null, false );
-				if ( ! $success ) {
-					$errors = true;
-				}
+				self::process_resend_ticket_notice( null, false );
 			}
 			//restore $_REQUEST to original for any other plugins hooking in later.
 			$_REQUEST = $original_request;
-			$success = $errors ? false : $success;
 		}
 		return $success;
 	}
