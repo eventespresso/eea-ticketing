@@ -105,7 +105,10 @@ class EED_Ticketing  extends EED_Messages {
 		if (
 			$success
 			&& isset( $request['action'] )
-			&& $request['action'] === 'approve_and_notify_registration'
+			&& (
+				$request['action'] === 'approve_and_notify_registration'
+				|| $request['action'] === 'change_reg_status'
+			)
 		) {
 			$original_request = $_REQUEST;
 			$reg_ids = isset( $request['_REG_ID'] ) ? $request['_REG_ID'] : null;
