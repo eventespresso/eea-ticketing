@@ -50,6 +50,16 @@ class EED_Ticketing  extends EED_Messages {
 	}
 
 
+	/**
+	 * Simply returns whether Ticketing should use the new 4.9+ messages system for sending or pre 4.9 messages system.
+	 * @since 1.0.4.rc.005
+	 * @return bool
+	 */
+	protected static function _use_new_system() {
+		return property_exists( 'EED_Messages', '_message_resource_manager' );
+	}
+
+
 
 
 	/**
@@ -85,10 +95,21 @@ class EED_Ticketing  extends EED_Messages {
 		EE_Registry::instance()->load_helper( 'MSG_Template' );
 		if ( EEH_MSG_Template::is_mt_active( 'ticket_notice' ) ) {
 			self::_load_controller();
-			self::$_EEMSG->send_message(
-				'ticket_notice',
-				$data
+			if ( self::_use_new_system() ) {
+				try {
+					$messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers( 'ticket_notice', $data );
+					//batch queue and initiate_request
+					self::$_MSG_PROCESSOR->batch_queue_for_generation_and_persist( $messages_to_generate );
+					self::$_MSG_PROCESSOR->get_queue()->initiate_request_by_priority();
+				} catch( EE_Error $e ) {
+					EE_Error::add_error( $e->getMessage(), __FILE__, __FUNCTION__, __LINE__ );
+				}
+			} else {
+				self::$_EEMSG->send_message(
+					'ticket_notice',
+					$data
 				);
+			}
 		}
 		return;
 	}
@@ -159,7 +180,18 @@ class EED_Ticketing  extends EED_Messages {
 				//branch at the time of this work.
 				$registration_processor = EE_Registry::instance()->load_class( 'Registration_Processor' );
 				$data = method_exists( $registration_processor, 'generate_ONE_registration_from_line_item' ) ? array( $reg, EEM_Registration::status_id_approved ) :$reg;
-				$success = self::$_EEMSG->send_message( 'ticket_notice', $data );
+				if ( self::_use_new_system() ) {
+					try {
+						$messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers( 'ticket_notice', $data );
+						self::$_MSG_PROCESSOR->batch_queue_for_generation_and_persist( $messages_to_generate );
+						self::$_MSG_PROCESSOR->get_queue()->initiate_request_by_priority();
+					} catch( EE_Error $e ) {
+						EE_Error::add_error( $e->getMessage(), __FILE__, __FUNCTION__, __LINE__ );
+						$success = false;
+					}
+				} else {
+					$success = self::$_EEMSG->send_message( 'ticket_notice', $data );
+				}
 			}
 		}
 
@@ -227,20 +259,22 @@ class EED_Ticketing  extends EED_Messages {
 	}
 
 
+	/**
+	 * protected method for generating an aggregate ticket list for all tickets belonging to a transaction.
+	 * @param bool $approved_only
+	 *
+	 * @throws EE_Error
+	 */
 	protected function _generate_tickets( $approved_only = false ) {
-		//declare vars
-		$messages = array();
-
 		//get the params from the request
-		$token = EE_Registry::instance()->REQ->is_set( 'token' ) ? EE_Registry::instance()->REQ->get('token') : '';
+		$token = EE_Registry::instance()->REQ->is_set( 'token' ) ? EE_Registry::instance()->REQ->get( 'token' ) : '';
 
 		//verify the needed params are present.
 		if ( empty( $token ) ) {
-			throw new EE_Error( __('The request for the "ee-txn-tickets-url" route has a malformed url.', 'event_espresso') );
+			throw new EE_Error( __( 'The request for the "ee-txn-tickets-url" route has a malformed url.', 'event_espresso' ) );
 		}
 
 		self::_load_controller();
-
 
 		$registration = EEM_Registration::instance()->get_one( array( array( 'REG_url_link' => $token ) ) );
 
@@ -250,8 +284,10 @@ class EED_Ticketing  extends EED_Messages {
 		}
 
 		$transaction = $registration->transaction();
-		//if primary registration then we grab all registrations and loop through to generate the html.  If not primary, then we just use the existing registration and throw that ticket up.  Note this is also conditional on the approved_only flag.  If that is true and there are no approved registrations for the requested route, then we throw up error screen.
-		$show_error_screen = false;
+		//if primary registration then we grab all registrations and loop through to generate the html.  If not primary,
+		// then we just use the existing registration and throw that ticket up.  Note this is also conditional on the
+		// approved_only flag.  If that is true and there are no approved registrations for the requested route, then we
+		// throw up error screen.
 		if ( ! $registration->is_primary_registrant() ) {
 			//need to get all registrations attached to the contact for this registrant that are for this transaction.
 			$registrations = $transaction instanceof EE_Transaction ? $transaction->registrations( array( array( 'ATT_ID' => $registration->attendee() ) ) ) : array();
@@ -260,16 +296,85 @@ class EED_Ticketing  extends EED_Messages {
 			$registrations = $transaction instanceof EE_Transaction ? $transaction->registrations() : array();
 		}
 
+		if ( self::_use_new_system() ) {
+			$success = self::_display_all_tickets_new_system( $approved_only, $transaction, $registrations );
+		} else {
+			$success = self::_display_all_tickets_old_system( $approved_only, $transaction, $registrations );
+		}
+
+		if ( ! $success && $approved_only ) {
+			//no tickets generated due to approved status requirement so let's show an appropriate error
+			//screen.
+			EE_Registry::instance()->load_helper( 'Template' );
+			EEH_Template::locate_template(
+				array( EE_TICKETING_PATH . 'templates/eea-ticketing-no-generated-tickets.template.php' ),
+				array(),
+				true,
+				false
+			);
+			exit;
+		}
+	}
+
+
+	/**
+	 * Generates and displays the generated html for all tickets using the new system (or returns false if unsuccessful)
+	 *
+	 * @param bool              $approved_only  Used to indicate if only approved registrations are to be used.
+	 * @param EE_Transaction    $transaction
+	 * @param EE_Registration[] $registrations
+	 * @return bool|void
+	 */
+	protected static function _display_all_tickets_new_system( $approved_only, EE_Transaction $transaction, $registrations = array() ) {
+		$messages_to_generate = array();
+		foreach ( $registrations as $registration ) {
+			if ( $approved_only && $registration->status_ID() !== EEM_Registration::status_id_approved ) {
+				continue;
+			}
+			$messages_to_generate[] = new EE_Message_To_Generate( 'html', 'ticketing', $registration );
+		}
+
+		//generate and get the queue so we can get all the generated messages and use that for the content.
+		try {
+			/** @var EE_Messages_Queue $generated_queue */
+			$generated_queue = self::$_MSG_PROCESSOR->generate_and_return( $messages_to_generate );
+			return self::send_message_with_messenger_only(
+				'html',
+				'ticketing',
+				$generated_queue,
+				sprintf(
+					__( 'All tickets for the transaction: %d', 'event_espresso' ),
+					$transaction->ID()
+				)
+			);
+		} catch ( EE_Error $e ) {
+			return false;
+		}
+	}
+
+
+	/**
+	 * Displays all generated tickets using old messages system (or returns false if unable to do so).
+	 *
+	 * @deprecated 1.0.4.rc.006
+	 * @since 1.0.4.rc.006
+	 * @param bool  $approved_only  Used to indicate if only approved registrations are to be used.
+	 * @param EE_Transaction $transaction
+	 * @param array $registrations
+	 * @return bool|void
+	 */
+	protected function _display_all_tickets_old_system( $approved_only, EE_Transaction $transaction, $registrations = array() ) {
+		$success = true;
 		foreach ( $registrations as $reg ) {
 			if ( $approved_only && $reg->status_ID() != EEM_Registration::status_id_approved ) {
 				continue;
 			}
-			$message = self::$_EEMSG->send_message( 'ticketing', $reg, 'html', '', 'registrant', FALSE );
+
+			$message = self::$_EEMSG->send_message( 'ticketing', $reg, 'html', '', 'registrant', false );
 			if ( $message ) {
 				$messages[] = $message;
 			}
 		}
-
 
 		//now let's consolidate the $message objects into one message object for the actual displayed template
 		$content = '';
@@ -285,26 +390,14 @@ class EED_Ticketing  extends EED_Messages {
 
 			$final_msg->subject = sprintf( __( 'All tickets for the transaction: %d', 'event_espresso' ), $transaction->ID() );
 			$final_msg->content = $content;
-			$final_msg->template_pack =  ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack( 'default' ) : $final_msg->template_pack;
+			$final_msg->template_pack = ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack( 'default' ) : $final_msg->template_pack;
 			$final_msg->variation = empty( $final_msg->variation ) ? 'default' : $final_msg->variation;
 
 			//now we can trigger that message setup
 			self::$_EEMSG->send_message_with_messenger_only( 'html', 'ticketing', $final_msg );
 		} else {
-			$show_error_screen = true;
+			$success = false;
 		}
-
-		if ( $show_error_screen && $approved_only ) {
-			//no tickets generated due to approved status requirement so let's show an appropriate error
-			//screen.
-			EE_Registry::instance()->load_helper('Template');
-			EEH_Template::locate_template(
-				array( EE_TICKETING_PATH . 'templates/eea-ticketing-no-generated-tickets.template.php' ),
-				array(),
-				true,
-				false
-				);
-			exit;
-		}
+		return $success;
 	}
 }
