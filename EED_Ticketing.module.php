@@ -167,7 +167,7 @@ class EED_Ticketing  extends EED_Messages {
 
 		if ( $success ) {
 			self::_load_controller();
-			$active_mts = self::$_EEMSG->get_active_message_types();
+			$active_mts = self::_use_new_system() ? self::$_message_resource_manager->list_of_active_message_types() : self::$_EEMSG->get_active_message_types();
 			if ( ! in_array( 'ticket_notice', $active_mts ) ) {
 				$success = false;
 				EE_Error::add_error( sprintf( __( 'Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.', 'event_espresso' ), '<a href="' . admin_url( 'admin.php?page=espresso_messages&action=settings' ) . '">', '</a>' ), __FILE__, __FUNCTION__, __LINE__ );
@@ -241,7 +241,7 @@ class EED_Ticketing  extends EED_Messages {
 	 * @return void
 	 */
 	public function run_approved( $WP ) {
-		$this->_generate_tickets(true);
+		$this->_generate_tickets( true );
 	}
 
 
