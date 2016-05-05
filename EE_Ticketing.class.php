@@ -154,7 +154,7 @@ Class  EE_Ticketing extends EE_Addon {
 			}
 
 			$display_ticket_notice_url = self::_get_ticket_url( $item );
-			$display_tkt_notice_lnk = EEH_MSG_Template::is_mt_active( 'ticketing' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_display_ticket', $item->ID() ) ? '
+			$display_tkt_notice_lnk = ! empty( $display_ticket_notice_url ) && EEH_MSG_Template::is_mt_active( 'ticketing' ) && EE_Registry::instance()->CAP->current_user_can( 'ee_send_message', 'espresso_registrations_display_ticket', $item->ID() ) ? '
 <li>
 	<a target="_blank" href="'.$display_ticket_notice_url.'" title="' . __( 'Display Ticket for Registration', 'event_espresso' ) . '" class="tiny-text">
 		<div class="dashicons dashicons-tickets-alt"></div>
@@ -589,6 +589,10 @@ Class  EE_Ticketing extends EE_Addon {
 
 		//if no $mtp then that means an existing event that hasn't been saved yet with the templates for the global ticketing template.  So let's just grab the global.
 		$mtp = $mtp instanceof EE_Message_Template_Group ? $mtp : EEM_Message_Template_Group::instance()->get_one( array( array( 'MTP_is_global' => 1, 'MTP_message_type' => 'ticketing' ) ) );
+
+		if ( ! $mtp instanceof EE_Message_Template_Group ) {
+			return '';
+		}
 
 		$query_args = array(
 			'ee' => 'msg_url_trigger',
