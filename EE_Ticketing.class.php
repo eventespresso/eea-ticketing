@@ -575,7 +575,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'ee' => $approved_only ? 'ee-txn-tickets-approved-url' : 'ee-txn-tickets-url',
 			'token' => $reg_url_link
 			);
-		return add_query_arg( $query_args, get_site_url() );
+		return add_query_arg( $query_args, get_home_url() );
 	}
 
 
@@ -604,7 +604,7 @@ Class  EE_Ticketing extends EE_Addon {
 			'GRP_ID' => $mtp->ID(),
 			'id' => 0
 			);
-		return add_query_arg( $query_args, get_site_url() );
+		return add_query_arg( $query_args, get_home_url() );
 	}
 
 }
