@@ -1,57 +1,67 @@
 <?php if ( ! defined( 'EVENT_ESPRESSO_VERSION' )) { exit(); }
+// define the plugin directory path and URL
+define('EE_TICKETING_PATH', plugin_dir_path(__FILE__));
+define('EE_TICKETING_URL', plugin_dir_url(__FILE__));
+
+
+
 /**
- * ------------------------------------------------------------------------
- *
  * Class  EE_Ticketing
  *
  * @package			EE Ticketing
  * @subpackage		core
  * @author			Darren Ethier
  * @since		 	1.0.0
- *
- * ------------------------------------------------------------------------
  */
-// define the plugin directory path and URL
-define( 'EE_TICKETING_PATH', plugin_dir_path( __FILE__ ));
-define( 'EE_TICKETING_URL', plugin_dir_url( __FILE__ ));
 Class  EE_Ticketing extends EE_Addon {
 
 	public static function register_addon() {
 		// register addon via Plugin API
-		EE_Register_Addon::register(
-			'Ticketing',
-			array(
-				'version' => EE_TICKETING_VERSION,
-				'min_core_version' => '4.6.0.alpha.000',
-				'main_file_path' => EE_TICKETING_PLUGIN_FILE,
-				'autoloader_paths' => array(
-					'EE_Ticketing' 						=> EE_TICKETING_PATH . 'EE_Ticketing.class.php'
-				),
-				'module_paths' => array( EE_TICKETING_PATH . 'EED_Ticketing.module.php' ),
-				// if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
-				'pue_options'			=> array(
-					'pue_plugin_slug' => 'eea-ticketing',
-					'checkPeriod' => '24',
-					'use_wp_update' => FALSE
-					),
-				'message_types' => array(
-					'ticketing' => self::register_ticketing_message_type(),
-					'ticket_notice' => self::register_ticket_notice()
-					)
-			)
-		);
-
-		//register new shortcodes with existing libraries.
-		add_filter( 'FHEE__EE_Shortcodes__shortcodes', array( 'EE_Ticketing', 'register_new_shortcodes' ), 10, 2 );
-		add_filter( 'FHEE__EE_Shortcodes__parser_after', array( 'EE_Ticketing', 'register_new_shortcode_parsers'), 10, 5 );
-		add_filter( 'FHEE__EE_Messages_Validator__get_specific_shortcode_excludes', array( 'EE_Ticketing', 'exclude_new_shortcodes' ), 10, 3 );
-
-		self::_add_admin_page_filters();
-		self::_add_template_pack_filters();
+        EE_Register_Addon::register(
+            'Ticketing',
+            array(
+                'version'          => EE_TICKETING_VERSION,
+                'min_core_version' => '4.9.26.rc.000',
+                'main_file_path'   => EE_TICKETING_PLUGIN_FILE,
+                'autoloader_paths' => array(
+                    'EE_Ticketing' => EE_TICKETING_PATH . 'EE_Ticketing.class.php',
+                ),
+                'module_paths'     => array(EE_TICKETING_PATH . 'EED_Ticketing.module.php'),
+                // if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
+                'pue_options'      => array(
+                    'pue_plugin_slug' => 'eea-ticketing',
+                    'checkPeriod'     => '24',
+                    'use_wp_update'   => false,
+                ),
+                'message_types'    => array(
+                    'ticketing'     => self::register_ticketing_message_type(),
+                    'ticket_notice' => self::register_ticket_notice(),
+                ),
+            )
+        );
 	}
 
 
-	/**
+
+    /**
+     * a safe space for addons to add additional logic like setting hooks
+     * that will run immediately after addon registration
+     * making this a great place for code that needs to be "omnipresent"
+     */
+    public function after_registration()
+    {
+        //register new shortcodes with existing libraries.
+        add_filter('FHEE__EE_Shortcodes__shortcodes', array('EE_Ticketing', 'register_new_shortcodes'), 10, 2);
+        add_filter('FHEE__EE_Shortcodes__parser_after', array('EE_Ticketing', 'register_new_shortcode_parsers'), 10, 5);
+        add_filter('FHEE__EE_Messages_Validator__get_specific_shortcode_excludes',
+            array('EE_Ticketing', 'exclude_new_shortcodes'), 10, 3);
+        self::_add_admin_page_filters();
+        self::_add_template_pack_filters();
+    }
+
+
+
+    /**
 	* Takes care of adding all filters for template packs this message type connects with.
 	*
 	* @since 1.0.0
@@ -249,10 +259,25 @@ Class  EE_Ticketing extends EE_Addon {
 	 *
 	 * @return string The new base path.
 	 */
-	public static function register_base_path_for_ticketing_templates( $base_path, $messenger, $message_type, $field, $context, $template_pack ) {
-		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || ( ! $message_type instanceof EE_Ticketing_message_type && ! $message_type instanceof EE_Ticket_Notice_message_type ) ) {
-			return $base_path; //we're only setting up default templates for the default pack or for ticketing message type or ticket notice message type.
-		}
+    public static function register_base_path_for_ticketing_templates(
+        $base_path,
+        $messenger,
+        $message_type,
+        $field,
+        $context,
+        $template_pack
+    ) {
+        if (
+            ! $template_pack instanceof EE_Messages_Template_Pack_Default
+             || (
+                 ! $message_type instanceof EE_Ticketing_message_type
+                  && ! $message_type instanceof EE_Ticket_Notice_message_type
+            )
+        ) {
+            // we're only setting up default templates for the default pack
+            // or for ticketing message type or ticket notice message type.
+            return $base_path;
+        }
 
 		return EE_TICKETING_PATH . 'core/messages/templates/';
 	}
@@ -275,8 +300,21 @@ Class  EE_Ticketing extends EE_Addon {
 	 *
 	 * @return string new base path or url
 	 */
-	public static function get_ticketing_css_path_or_url( $base_path_or_url, $messenger, $message_type, $type, $variation, $url, $file_extension, $template_pack ) {
-		if ( ! $template_pack instanceof EE_Messages_Template_Pack_Default || $messenger != 'html' || $message_type != 'ticketing' ) {
+    public static function get_ticketing_css_path_or_url(
+        $base_path_or_url,
+        $messenger,
+        $message_type,
+        $type,
+        $variation,
+        $url,
+        $file_extension,
+        $template_pack
+    ) {
+		if (
+		    ! $template_pack instanceof EE_Messages_Template_Pack_Default
+            || $messenger !== 'html'
+            || $message_type !== 'ticketing'
+        ) {
 			return $base_path_or_url;
 		}
 
@@ -367,7 +405,7 @@ Class  EE_Ticketing extends EE_Addon {
 					'<li><strong>mode</strong>:' . __('This parameter is used to indicate what mode the code is generated in.  0 = normal, 1 = label strip, 2 = label box.  Use in the format [QRCODE_* mode=2].', 'event_espresso') . '</li>' .
 					'<li><strong>label</strong>:' . __('This allows you to set a custom label that will appear over the code. [QRCODE_* label="My QR Code"]', 'event_espresso' ) . '</li>' .
 					'</ul></p>';
-			$shortcodes['[GRAVATAR_*]'] = __('This shortcode will grab the email address attached to the registration and use that to attempt to grab a gravatar image.  If none is found then whatever is set in your WordPress settings for Default Avatar will be used. You can include what you want the dimensions of the gravatar to be by including params in the folowing format: "d=40".  So [GRAVATAR_* d=40] will parse to a gravatar image that is 40 pixels wide by 40 pixels high.', 'event_espresso');
+			$shortcodes['[GRAVATAR_*]'] = __('This shortcode will grab the email address attached to the registration and use that to attempt to grab a gravatar image.  If none is found then whatever is set in your WordPress settings for Default Avatar will be used. You can include what you want the dimensions of the gravatar to be by including params in the following format: "d=40".  So [GRAVATAR_* d=40] will parse to a gravatar image that is 40 pixels wide by 40 pixels high.', 'event_espresso');
 			$shortcodes['[BARCODE_*]'] = __('This shortcode is used to generate a custom barcode for the ticket instead of a qrcode.  There are a number of different options for the barcode:') . '<p></ul>' .
 				'<li><strong>w</strong>:' . __('Used to set the width (default is 1). [BARCODE_* w=20]', 'event_espresso') . '</li>' .
 				'<li><strong>h</strong>:' . __('Used to set the height (default is 70). [BARCODE_* h=50]', 'event_espresso') . '</li>' .
