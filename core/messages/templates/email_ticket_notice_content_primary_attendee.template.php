@@ -33,7 +33,7 @@
 <tr>
 <td>
 <h2>Hello, [RECIPIENT_FNAME]:</h2>
-<p class="lead"><a href="[TXN_TICKETS_URL]">Print your ticket(s)</a>!</p>
+<p class="lead"><a href="[TXN_TICKETS_APPROVED_URL]">Print your ticket(s)</a>!</p>
 </td>
 </tr>
 </tbody>
