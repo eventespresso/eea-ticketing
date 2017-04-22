@@ -7,7 +7,7 @@ EE Ticketing Add-on
 [![Event Espresso Addon](https://img.shields.io/badge/Addon%20For-Event%20Espresso-blue.svg)](https://github.com/eventespresso/event-espresso-core)
 [![Minimum EE Core Version:](https://img.shields.io/badge/Minimum%20EE%20core%20ver-4.9.26.p-red.svg)](https://github.com/eventespresso/event-espresso-core/releases/tag/4.9.26.p)
 
-This add-on adds some extra groovy features to [Event Espresso](https://eventespresso.com).
+Give attendees custom-designed printable tickets for each event to keep as a souvenir, serve as a place to sell advertising and more.
 
 > Note, there is **no usage support** provided here.  Please read the entire contents of this document before posting any issues.  If we encounter issues that give evidence of this document not having been read the issue _will be closed_.
 
