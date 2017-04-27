@@ -50,4 +50,11 @@ class EE_Ticket_Notice_message_type extends EE_Registration_Base_message_type
             ),
         );
     }
+
+
+    protected function _primary_attendee_addressees()
+    {
+        $this->_single_message = false;
+        return parent::_primary_attendee_addressees();
+    }
 } //end class EE_Ticket_Notice_message_type
