@@ -188,7 +188,7 @@ class EED_Ticketing extends EED_Messages
         $success = true;
         if (! isset($_REQUEST['_REG_ID'])) {
             EE_Error::add_error(
-                __(
+                esc_html__(
                     'Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.',
                     'event_espresso'
                 ),
@@ -206,7 +206,7 @@ class EED_Ticketing extends EED_Messages
         if (! $reg instanceof EE_Registration) {
             EE_Error::add_error(
                 sprintf(
-                    __(
+                    esc_html__(
                         'Unable to retrieve a registration object for the given reg id (%s)',
                         'event_espresso'
                     ),
@@ -233,7 +233,7 @@ class EED_Ticketing extends EED_Messages
                 $success = false;
                 EE_Error::add_error(
                     sprintf(
-                        __(
+                        esc_html__(
                             'Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.',
                             'event_espresso'
                         ),
@@ -365,7 +365,7 @@ class EED_Ticketing extends EED_Messages
         //verify the needed params are present.
         if (empty($token)) {
             throw new EE_Error(
-                __(
+                esc_html__(
                     'The request for the "ee-txn-tickets-url" route has a malformed url.',
                     'event_espresso'
                 )
@@ -451,7 +451,7 @@ class EED_Ticketing extends EED_Messages
                 'ticketing',
                 $generated_queue,
                 sprintf(
-                    __('All tickets for the transaction: %d', 'event_espresso'),
+                    esc_html__('All tickets for the transaction: %d', 'event_espresso'),
                     $transaction->ID()
                 )
             );
@@ -509,7 +509,7 @@ class EED_Ticketing extends EED_Messages
             }
 
             $final_msg->subject       = sprintf(
-                __('All tickets for the transaction: %d', 'event_espresso'),
+                esc_html__('All tickets for the transaction: %d', 'event_espresso'),
                 $transaction->ID()
             );
             $final_msg->content       = $content;
