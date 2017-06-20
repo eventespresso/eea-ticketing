@@ -68,6 +68,29 @@ class EED_Ticketing extends EED_Messages
             10,
             2
         );
+        //add resend_ticket_notice action to registration list table.
+        add_filter(
+            'FHEE__EE_Admin_List_Table___action_string__action_items',
+            array('EED_Ticketing', 'resend_ticket_notice_trigger'),
+            10,
+            3
+        );
+
+        //add icons to legend
+        add_filter(
+            'FHEE__EE_Admin_Page___display_legend__items',
+            array('EED_Ticketing', 'add_icons_to_list_table_legend'),
+            10,
+            2
+        );
+
+        //filter the registrations list table route so we can add the route for
+        add_filter(
+            'FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes',
+            array('EED_Ticketing', 'additional_reg_page_routes'),
+            10,
+            2
+        );
     }
 
 
@@ -80,6 +103,158 @@ class EED_Ticketing extends EED_Messages
     protected static function _use_new_system()
     {
         return property_exists('EED_Messages', '_message_resource_manager');
+    }
+
+
+    /**
+     * Callback for FHEE__EE_Admin_List_Table___action_string__action_items used
+     * to setup the resend ticket notice trigger, and the ticket display trigger.
+     *
+     * @param string                         $action_items original action items
+     * @param EE_Registration|EE_Transaction $item
+     * @param EE_Admin_List_Table            $list_table
+     * @return string action items with any additional things.
+     * @throws EE_Error
+     * @throws EntityNotFoundException
+     */
+    public static function resend_ticket_notice_trigger($action_items, $item, EE_Admin_List_Table $list_table)
+    {
+        if (! EEH_MSG_Template::is_mt_active('ticket_notice')
+            && ! EEH_MSG_Template::is_mt_active('ticketing')
+        ) {
+            return $action_items;
+        }
+        if ($list_table instanceof EE_Registrations_List_Table && $item instanceof EE_Registration) {
+            $resend_tkt_notice_lnk = '';
+            //only display resend ticket notice link IF the registration is approved.
+            if ($item->is_approved()) {
+                $resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce(
+                    array(
+                        'action'  => 'resend_ticket_notice',
+                        '_REG_ID' => $item->ID(),
+                    ),
+                    admin_url('admin.php?page=espresso_registrations')
+                );
+                $resend_tkt_notice_lnk = EEH_MSG_Template::is_mt_active('ticket_notice')
+                                         && EE_Registry::instance()->CAP->current_user_can(
+                                             'ee_send_message',
+                                             'espresso_registrations_resend_ticket_notice',
+                                             $item->ID()
+                                         ) ? '
+<li>
+	<a href="' . $resend_ticket_notice_url . '" title="' . esc_html__('Resend Ticket Notice', 'event_espresso') . '"'
+                . ' class="tiny-text">
+		<div class="dashicons dashicons-email"></div>
+	</a>
+</li>'
+                    : '';
+            }
+            $display_ticket_notice_url = self::getTicketUrl($item);
+            $display_tkt_notice_lnk = ! empty($display_ticket_notice_url)
+                                      && EEH_MSG_Template::is_mt_active('ticketing')
+                                      && EE_Registry::instance()->CAP->current_user_can(
+                                          'ee_send_message',
+                                          'espresso_registrations_display_ticket',
+                                          $item->ID()
+                                      )
+                ? '
+<li>
+	<a target="_blank" href="' . $display_ticket_notice_url . '"'
+                . ' title="' . esc_html__('Display Ticket for Registration', 'event_espresso') . '" class="tiny-text">
+		<div class="dashicons dashicons-tickets-alt"></div>
+	</a>
+</li>'
+                : '';
+            return $action_items . $resend_tkt_notice_lnk . $display_tkt_notice_lnk;
+        }
+        if ($list_table instanceof EE_Admin_Transactions_List_Table && $item instanceof EE_Transaction) {
+            $display_ticket_notice_url = self::getTransactionTicketsUrl($item->primary_registration());
+            $display_tkt_notice_lnk = EEH_MSG_Template::is_mt_active('ticketing')
+                                      && EE_Registry::instance()->CAP->current_user_can(
+                                          'ee_send_message',
+                                          'espresso_transactions_display_ticket',
+                                          $item->ID()
+                                      )
+                ? '
+<li>
+	<a target="_blank" href="' . $display_ticket_notice_url . '"'
+                . ' title="' . esc_html__('Display Ticket for Registration', 'event_espresso') . '" class="tiny-text">
+		<div class="dashicons dashicons-tickets-alt"></div>
+	</a>
+</li>'
+                : '';
+            return $action_items . $display_tkt_notice_lnk;
+        }
+        return $action_items;
+    }
+
+
+    /**
+     * This hooks into FHEE__EE_Admin_Page___display_legend__items to add new legend
+     * items for action icons.
+     *
+     * @param array         $icon_items current icon items
+     * @param EE_Admin_Page $admin_page
+     * @return array new icon_items.
+     */
+    public static function add_icons_to_list_table_legend($icon_items, EE_Admin_Page $admin_page)
+    {
+        if ($admin_page instanceof Extend_Registrations_Admin_Page) {
+            if (EEH_MSG_Template::is_mt_active('ticket_notice')) {
+                $icon_items['ticket_notice'] = array(
+                    'class' => 'dashicons dashicons-email ee-icon-size-16',
+                    'desc'  => esc_html__('Resend Ticket Notice', 'event_espresso'),
+                );
+            }
+            if (EEH_MSG_Template::is_mt_active('ticketing')) {
+                $icon_items['ticketing'] = array(
+                    'class' => 'dashicons dashicons-tickets-alt ee-icon-size-16',
+                    'desc'  => esc_html__('View Ticket', 'event_espresso'),
+                );
+            }
+        }
+        if ($admin_page instanceof Extend_Transactions_Admin_Page) {
+            if (EEH_MSG_Template::is_mt_active('ticketing')) {
+                $icon_items['ticketing'] = array(
+                    'class' => 'dashicons dashicons-tickets-alt ee-icon-size-16',
+                    'desc'  => esc_html__('View Ticket', 'event_espresso'),
+                );
+            }
+        }
+        return $icon_items;
+    }
+
+
+    /**
+     *  Callback for FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes
+     *  used to add additional routes to the registrations admin page.
+     *
+     * @param array         $routes Routes array
+     * @param EE_Admin_Page $admin_page
+     * @return array        $routes with the additional routes added.
+     */
+    public static function additional_reg_page_routes($routes, EE_Admin_Page $admin_page)
+    {
+        $routes['resend_ticket_notice'] = array(
+            'func'       => array('EED_Ticketing', 'resend_ticket_notice'),
+            'capability' => 'ee_send_message',
+            'noheader'   => true,
+        );
+        return $routes;
+    }
+
+
+
+    /**
+     * This is called by the resend_ticket_notice route in the registration admin.
+     * Processes the resend ticket notice action.
+     *
+     * @param EE_Admin_Page $admin_page
+     * @return void
+     */
+    public static function resend_ticket_notice($admin_page)
+    {
+        do_action('AHEE__EE_Ticketing__resend_ticket_notice', $admin_page);
     }
 
 
@@ -524,5 +699,75 @@ class EED_Ticketing extends EED_Messages
             $success = false;
         }
         return $success;
+    }
+
+
+    /**
+     * Returns the url for viewing a ticket with a given registration.
+     * @param EE_Registration $registration
+     * @return string
+     * @throws EE_Error
+     * @throws EntityNotFoundException
+     */
+    public static function getTicketUrl(EE_Registration $registration)
+    {
+        //we need to get the correct template ID for the given event
+        $event = $registration->event();
+        //get the assigned ticket template for this event
+        $message_template_group = EEM_Message_Template_Group::instance()->get_one(array(
+            array(
+                'Event.EVT_ID'     => $event->ID(),
+                'MTP_message_type' => 'ticketing',
+            ),
+        ));
+        // if no $message_template_group then that means an existing event that hasn't been saved yet
+        // with the templates for the global ticketing template.  So let's just grab the global.
+        $message_template_group = $message_template_group instanceof EE_Message_Template_Group
+            ? $message_template_group
+            : EEM_Message_Template_Group::instance()->get_one(
+                array(
+                    array(
+                        'MTP_is_global'    => 1,
+                        'MTP_message_type' => 'ticketing',
+                    ),
+                )
+            );
+        if (! $message_template_group instanceof EE_Message_Template_Group) {
+            return '';
+        }
+        $query_args = array(
+            'ee'           => 'msg_url_trigger',
+            'snd_msgr'     => 'html',
+            'gen_msgr'     => 'html',
+            'message_type' => 'ticketing',
+            'context'      => 'registrant',
+            'token'        => $registration->reg_url_link(),
+            'GRP_ID'       => $message_template_group->ID(),
+            'id'           => 0,
+        );
+        return add_query_arg($query_args, get_home_url());
+    }
+
+
+
+    /**
+     * Gets the url replacing the transaction tickets messages shortcode.
+     * [TXN_TICKETS_URL]: $approved_only = false
+     * [TXN_TICKETS_APPROVED_URL] : $approved_only = true
+     *
+     * @param EE_Registration $registration
+     * @param bool            $approved_only         whether to generate the url that returns only tickets for approved
+     *                                               registrations.
+     * @return string
+     * @throws EE_Error
+     */
+    public static function getTransactionTicketsUrl(EE_Registration $registration, $approved_only = false)
+    {
+        $reg_url_link = $registration->reg_url_link();
+        $query_args = array(
+            'ee'    => $approved_only ? 'ee-txn-tickets-approved-url' : 'ee-txn-tickets-url',
+            'token' => $reg_url_link,
+        );
+        return add_query_arg($query_args, get_home_url());
     }
 }
