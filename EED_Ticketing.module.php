@@ -1,14 +1,8 @@
 <?php
-/**
- * This file contains the module for the EE Ticketing addon
- *
- * @since      1.0.0
- * @package    EE Ticketing
- * @subpackage modules, messages
- */
-if (! defined('EVENT_ESPRESSO_VERSION')) {
-    exit('No direct script access allowed');
-}
+
+use EventEspresso\core\exceptions\EntityNotFoundException;
+
+defined('EVENT_ESPRESSO_VERSION') || exit('No direct access allowed.');
 
 /**
  * EE_Ticketing module.  Takes care of registering the url trigger for the special [TXN_TICKETS_URL] messages shortcode.
@@ -31,10 +25,18 @@ class EED_Ticketing extends EED_Messages
     public static function set_hooks()
     {
         //add trigger for ticket notice
-        add_action('AHEE__EE_Registration_Processor__trigger_registration_update_notifications',
-            array('EED_Ticketing', 'maybe_ticket_notice'), 10, 2);
-        add_action('AHEE__EE_Ticketing__resend_ticket_notice', array('EED_Ticketing', 'process_resend_ticket_notice'),
-            10, 2);
+        add_action(
+            'AHEE__EE_Registration_Processor__trigger_registration_update_notifications',
+            array('EED_Ticketing', 'maybe_ticket_notice'),
+            10,
+            2
+        );
+        add_action(
+            'AHEE__EE_Ticketing__resend_ticket_notice',
+            array('EED_Ticketing', 'process_resend_ticket_notice'),
+            10,
+            2
+        );
 
         self::_register_routes();
     }
@@ -48,12 +50,24 @@ class EED_Ticketing extends EED_Messages
      */
     public static function set_hooks_admin()
     {
-        add_action('AHEE__EE_Registration_Processor__trigger_registration_update_notifications',
-            array('EED_Ticketing', 'maybe_ticket_notice'), 10, 2);
-        add_action('AHEE__EE_Ticketing__resend_ticket_notice', array('EED_Ticketing', 'process_resend_ticket_notice'),
-            10, 2);
-        add_action('AHEE__EE_Admin_Page___process_resend_registration',
-            array('EED_Ticketing', 'process_resend_ticket_notice_from_registration_trigger'), 10, 2);
+        add_action(
+            'AHEE__EE_Registration_Processor__trigger_registration_update_notifications',
+            array('EED_Ticketing', 'maybe_ticket_notice'),
+            10,
+            2
+        );
+        add_action(
+            'AHEE__EE_Ticketing__resend_ticket_notice',
+            array('EED_Ticketing', 'process_resend_ticket_notice'),
+            10,
+            2
+        );
+        add_action(
+            'AHEE__EE_Admin_Page___process_resend_registration',
+            array('EED_Ticketing', 'process_resend_ticket_notice_from_registration_trigger'),
+            10,
+            2
+        );
     }
 
 
@@ -76,6 +90,7 @@ class EED_Ticketing extends EED_Messages
      * @param EE_Registration $registration
      * @param array           $extra_details extra details coming from the transaction
      * @return void
+     * @throws EntityNotFoundException
      */
     public static function maybe_ticket_notice(EE_Registration $registration, $extra_details = array())
     {
@@ -91,17 +106,24 @@ class EED_Ticketing extends EED_Messages
         //MER dependencies, that also contains changes in messages system that do not exist in the master
         //branch at the time of this work.
         $registration_processor = EE_Registry::instance()->load_class('Registration_Processor');
-        $data                   = method_exists($registration_processor,
-            'generate_ONE_registration_from_line_item') ? array(
-            $registration->transaction(),
-            null,
-            EEM_Registration::status_id_approved,
-        ) : array($registration->transaction(), null);
+        $data                   = method_exists(
+            $registration_processor,
+            'generate_ONE_registration_from_line_item'
+        )
+            ? array(
+                $registration->transaction(),
+                null,
+                EEM_Registration::status_id_approved,
+            )
+            : array($registration->transaction(), null);
 
         //if we're not in the MER branch then we also consider the status of the  primary registration on
         //whether to continue or not.
-        if (! method_exists($registration_processor,
-                'generate_ONE_registration_from_line_item') && $registration->status_ID() != EEM_Registration::status_id_approved
+        if (! method_exists(
+            $registration_processor,
+            'generate_ONE_registration_from_line_item'
+        )
+            && $registration->status_ID() != EEM_Registration::status_id_approved
         ) {
             return;
         }
@@ -111,8 +133,10 @@ class EED_Ticketing extends EED_Messages
             self::_load_controller();
             if (self::_use_new_system()) {
                 try {
-                    $messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers('ticket_notice',
-                        $data);
+                    $messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers(
+                        'ticket_notice',
+                        $data
+                    );
                     //batch queue and initiate_request
                     self::$_MSG_PROCESSOR->batch_queue_for_generation_and_persist($messages_to_generate);
                     self::$_MSG_PROCESSOR->get_queue()->initiate_request_by_priority();
@@ -139,8 +163,7 @@ class EED_Ticketing extends EED_Messages
      */
     public static function process_resend_ticket_notice_from_registration_trigger($success, $request)
     {
-        if (
-            $success
+        if ($success
             && isset($request['action'])
             && (
                 $request['action'] === 'approve_and_notify_registration'
@@ -164,8 +187,15 @@ class EED_Ticketing extends EED_Messages
     {
         $success = true;
         if (! isset($_REQUEST['_REG_ID'])) {
-            EE_Error::add_error(__('Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.',
-                'event_espresso'), __FILE__, __FUNCTION__, __LINE__);
+            EE_Error::add_error(
+                __(
+                    'Something went wrong because there was no registration ID in the request.  Unable to resend the ticket notice.',
+                    'event_espresso'
+                ),
+                __FILE__,
+                __FUNCTION__,
+                __LINE__
+            );
             $success = false;
         }
 
@@ -174,8 +204,18 @@ class EED_Ticketing extends EED_Messages
 
         //if no reg object then error.
         if (! $reg instanceof EE_Registration) {
-            EE_Error::add_error(sprintf(__('Unable to retrieve a registration object for the given reg id (%s)',
-                'event_espresso'), absint($_REQUEST['_REG_ID'])), __FILE__, __FUNCTION__, __LINE__);
+            EE_Error::add_error(
+                sprintf(
+                    __(
+                        'Unable to retrieve a registration object for the given reg id (%s)',
+                        'event_espresso'
+                    ),
+                    absint($_REQUEST['_REG_ID'])
+                ),
+                __FILE__,
+                __FUNCTION__,
+                __LINE__
+            );
             $success = false;
         }
 
@@ -186,13 +226,24 @@ class EED_Ticketing extends EED_Messages
 
         if ($success) {
             self::_load_controller();
-            $active_mts = self::_use_new_system() ? self::$_message_resource_manager->list_of_active_message_types() : self::$_EEMSG->get_active_message_types();
+            $active_mts = self::_use_new_system()
+                ? self::$_message_resource_manager->list_of_active_message_types()
+                : self::$_EEMSG->get_active_message_types();
             if (! in_array('ticket_notice', $active_mts)) {
                 $success = false;
-                EE_Error::add_error(sprintf(__('Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.',
-                    'event_espresso'),
-                    '<a href="' . admin_url('admin.php?page=espresso_messages&action=settings') . '">', '</a>'),
-                    __FILE__, __FUNCTION__, __LINE__);
+                EE_Error::add_error(
+                    sprintf(
+                        __(
+                            'Cannot resend the ticket notice for this registration because the corresponding message type is not active.  If you wish to send messages for this message type then please activate it by %sgoing here%s.',
+                            'event_espresso'
+                        ),
+                        '<a href="' . admin_url('admin.php?page=espresso_messages&action=settings') . '">',
+                        '</a>'
+                    ),
+                    __FILE__,
+                    __FUNCTION__,
+                    __LINE__
+                );
             }
 
             if ($success) {
@@ -201,15 +252,21 @@ class EED_Ticketing extends EED_Messages
                 //MER dependencies, that also contains changes in messages system that do not exist in the master
                 //branch at the time of this work.
                 $registration_processor = EE_Registry::instance()->load_class('Registration_Processor');
-                $data                   = method_exists($registration_processor,
-                    'generate_ONE_registration_from_line_item') ? array(
-                    $reg,
-                    EEM_Registration::status_id_approved,
-                ) : $reg;
+                $data                   = method_exists(
+                    $registration_processor,
+                    'generate_ONE_registration_from_line_item'
+                )
+                    ? array(
+                        $reg,
+                        EEM_Registration::status_id_approved,
+                    )
+                    : $reg;
                 if (self::_use_new_system()) {
                     try {
-                        $messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers('ticket_notice',
-                            $data);
+                        $messages_to_generate = self::$_MSG_PROCESSOR->setup_mtgs_for_all_active_messengers(
+                            'ticket_notice',
+                            $data
+                        );
                         self::$_MSG_PROCESSOR->batch_queue_for_generation_and_persist($messages_to_generate);
                         self::$_MSG_PROCESSOR->get_queue()->initiate_request_by_priority();
                     } catch (EE_Error $e) {
@@ -236,7 +293,13 @@ class EED_Ticketing extends EED_Messages
                 : array(
                     'action' => 'default',
                 );
-            $admin_page->redirect_after_action(false, '', '', $query_args, true);
+            $admin_page->redirect_after_action(
+                false,
+                '',
+                '',
+                $query_args,
+                true
+            );
         } else {
             return $success;
         }
@@ -262,6 +325,8 @@ class EED_Ticketing extends EED_Messages
      *
      * @param WP $WP
      * @return void
+     * @throws EE_Error
+     * @throws EntityNotFoundException
      */
     public function run_approved($WP)
     {
@@ -274,6 +339,8 @@ class EED_Ticketing extends EED_Messages
      *
      * @param WP $WP
      * @return void
+     * @throws EE_Error
+     * @throws EntityNotFoundException
      */
     public function run($WP)
     {
@@ -286,16 +353,23 @@ class EED_Ticketing extends EED_Messages
      *
      * @param bool $approved_only
      * @throws EE_Error
+     * @throws EntityNotFoundException
      */
     protected function _generate_tickets($approved_only = false)
     {
         //get the params from the request
-        $token = EE_Registry::instance()->REQ->is_set('token') ? EE_Registry::instance()->REQ->get('token') : '';
+        $token = EE_Registry::instance()->REQ->is_set('token')
+            ? EE_Registry::instance()->REQ->get('token')
+            : '';
 
         //verify the needed params are present.
         if (empty($token)) {
-            throw new EE_Error(__('The request for the "ee-txn-tickets-url" route has a malformed url.',
-                'event_espresso'));
+            throw new EE_Error(
+                __(
+                    'The request for the "ee-txn-tickets-url" route has a malformed url.',
+                    'event_espresso'
+                )
+            );
         }
 
         self::_load_controller();
@@ -314,7 +388,9 @@ class EED_Ticketing extends EED_Messages
         // throw up error screen.
         if (! $registration->is_primary_registrant()) {
             //need to get all registrations attached to the contact for this registrant that are for this transaction.
-            $registrations = $transaction instanceof EE_Transaction ? $transaction->registrations(array(array('ATT_ID' => $registration->attendee()))) : array();
+            $registrations = $transaction instanceof EE_Transaction
+                ? $transaction->registrations(array(array('ATT_ID' => $registration->attendee())))
+                : array();
         } else {
             //get all registrations for transaction
             $registrations = $transaction instanceof EE_Transaction ? $transaction->registrations() : array();
@@ -347,7 +423,7 @@ class EED_Ticketing extends EED_Messages
      * @param bool              $approved_only Used to indicate if only approved registrations are to be used.
      * @param EE_Transaction    $transaction
      * @param EE_Registration[] $registrations
-     * @return bool|void
+     * @return bool
      */
     protected static function _display_all_tickets_new_system(
         $approved_only,
@@ -359,7 +435,11 @@ class EED_Ticketing extends EED_Messages
             if ($approved_only && $registration->status_ID() !== EEM_Registration::status_id_approved) {
                 continue;
             }
-            $messages_to_generate[] = new EE_Message_To_Generate('html', 'ticketing', $registration);
+            $messages_to_generate[] = new EE_Message_To_Generate(
+                'html',
+                'ticketing',
+                $registration
+            );
         }
 
         //generate and get the queue so we can get all the generated messages and use that for the content.
@@ -389,7 +469,8 @@ class EED_Ticketing extends EED_Messages
      * @param bool           $approved_only Used to indicate if only approved registrations are to be used.
      * @param EE_Transaction $transaction
      * @param array          $registrations
-     * @return bool|void
+     * @return bool
+     * @throws EE_Error
      */
     protected function _display_all_tickets_old_system(
         $approved_only,
@@ -402,7 +483,14 @@ class EED_Ticketing extends EED_Messages
                 continue;
             }
 
-            $message = self::$_EEMSG->send_message('ticketing', $reg, 'html', '', 'registrant', false);
+            $message = self::$_EEMSG->send_message(
+                'ticketing',
+                $reg,
+                'html',
+                '',
+                'registrant',
+                false
+            );
             if ($message) {
                 $messages[] = $message;
             }
@@ -420,10 +508,14 @@ class EED_Ticketing extends EED_Messages
                 }
             }
 
-            $final_msg->subject       = sprintf(__('All tickets for the transaction: %d', 'event_espresso'),
-                $transaction->ID());
+            $final_msg->subject       = sprintf(
+                __('All tickets for the transaction: %d', 'event_espresso'),
+                $transaction->ID()
+            );
             $final_msg->content       = $content;
-            $final_msg->template_pack = ! $final_msg->template_pack instanceof EE_Messages_Template_Pack ? EED_Messages::get_template_pack('default') : $final_msg->template_pack;
+            $final_msg->template_pack = ! $final_msg->template_pack instanceof EE_Messages_Template_Pack
+                ? EED_Messages::get_template_pack('default')
+                : $final_msg->template_pack;
             $final_msg->variation     = empty($final_msg->variation) ? 'default' : $final_msg->variation;
 
             //now we can trigger that message setup
