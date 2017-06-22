@@ -272,7 +272,7 @@ class RegisterCustomShortcodes
                 $reg_code = $code_value === 'long_code' ? $registration->reg_url_link() : $registration->reg_code();
                 if (isset($attrs['output_type'])) {
                     $valid_output_types = array('css', 'svg', 'canvas', 'bmp');
-                    $output_type = in_array($attrs['output_type'], $valid_output_types) ? $attrs['output_type'] : 'svg';
+                    $output_type = in_array($attrs['output_type'], $valid_output_types, true) ? $attrs['output_type'] : 'svg';
                 } else {
                     $output_type = 'svg';
                 }
