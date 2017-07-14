@@ -25,6 +25,6 @@ A checklist covering all the critical functionality for the Ticketing Add-on.
 ### Admin triggers
 
 * [ ] Ticket notice should automatically get sent along with notifications triggered for approved registrations (if the ticket notice message type is active).
-* [ ] There should be a specific resend ticket notice trigger in the registration list table for each registration.  Verify that when you click that action the ticket notice is regenerated and sent. Note it will be re-generated sent for all registrations in the same transaction.
+* [ ] There should be a specific resend ticket notice trigger in the registration list table for each _approved_ registration only.  Verify that when you click that action the ticket notice is regenerated and sent. Note it will be re-generated sent for all registrations in the same transaction.
 * [ ] There should be a view ticket icon in the actions column for each registration in the registration list table.  Verify that you are able to view the generated ticket for that registration when clicking the link.
 * [ ] There should be a view ticket icon in the actions column for each transaction in the transaction list table.  When you click this icon it should lead to a generated list of tickets for every registration in that transaction.
