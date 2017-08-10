@@ -64,7 +64,7 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
         if (! $registration instanceof EE_Registration) {
             return $actions;
         }
-
+        $actions = (array) $actions;
         $actions['ticket'] = '<a aria-label="' . esc_html__('Link to view ticket', 'event_espresso') . '"'
                 . ' href="' . EED_Ticketing::getTicketUrl($registration) . '">'
                 . '<span class="dashicons dashicons-tickets-alt ee-icon-size-18"></span></a>';
@@ -82,6 +82,7 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
      */
     public static function includeTicketLinkInLegendForMyEventsShortcode($legend_items)
     {
+        $legend_items = (array) $legend_items;
         $legend_items['ticket'] = array(
             'class' => 'dashicons dashicons-tickets-alt',
             'desc' => esc_html__('View Ticket', 'event_espresso')
