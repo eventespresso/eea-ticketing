@@ -4,6 +4,7 @@ use EventEspresso\core\services\loaders\LoaderInterface;
 use EventEspresso\core\exceptions\InvalidInterfaceException;
 use EventEspresso\core\exceptions\InvalidDataTypeException;
 use EventEspresso\core\services\loaders\Loader;
+use EventEspresso\core\services\loaders\LoaderFactory;
 
 defined('EVENT_ESPRESSO_VERSION') || exit;
 // define the plugin directory path and URL
@@ -87,7 +88,7 @@ Class  EE_Ticketing extends EE_Addon
     public static function loader()
     {
         if (! EE_Ticketing::$loader instanceof LoaderInterface) {
-            EE_Ticketing::$loader = new Loader;
+            EE_Ticketing::$loader = LoaderFactory::getLoader();
         }
         return EE_Ticketing::$loader;
     }
