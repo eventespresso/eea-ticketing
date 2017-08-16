@@ -61,7 +61,10 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
      */
     public static function includeTicketLinkWithMyEventsShortcode($actions, $registration)
     {
-        if (! $registration instanceof EE_Registration) {
+        if (! $registration instanceof EE_Registration
+            || $registration->status_ID() !== EEM_Registration::status_id_approved
+            || ! EEH_MSG_Template::is_mt_active('ticketing')
+        ) {
             return $actions;
         }
         $actions = (array) $actions;
@@ -82,6 +85,9 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
      */
     public static function includeTicketLinkInLegendForMyEventsShortcode($legend_items)
     {
+        if (! EEH_MSG_Template::is_mt_active('ticketing')) {
+            return $legend_items;
+        }
         $legend_items = (array) $legend_items;
         $legend_items['ticket'] = array(
             'class' => 'dashicons dashicons-tickets-alt',
