@@ -56,7 +56,10 @@ Class  EE_Ticketing extends EE_Addon
                 'autoloader_paths' => array(
                     'EE_Ticketing' => EE_TICKETING_PATH . 'EE_Ticketing.class.php',
                 ),
-                'module_paths'     => array(EE_TICKETING_PATH . 'EED_Ticketing.module.php'),
+                'module_paths'     => array(
+                    EE_TICKETING_PATH . 'EED_Ticketing.module.php',
+                    EE_TICKETING_PATH . 'EED_Ticketing_WPUser_Integration.module.php'
+                ),
                 // if plugin update engine is being used for auto-updates. not needed if PUE is not being used.
                 'pue_options'      => array(
                     'pue_plugin_slug' => 'eea-ticketing',
