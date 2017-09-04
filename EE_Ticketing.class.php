@@ -105,13 +105,8 @@ Class  EE_Ticketing extends EE_Addon
      */
     public function after_registration()
     {
-        add_action(
-            'AHEE__EE_System__load_espresso_addons__complete',
-            function () {
-                EE_Ticketing::loader()->getShared(
-                    'EventEspresso\Ticketing\domain\services\messages\RegisterCustomShortcodes'
-                );
-            }
+        EE_Ticketing::loader()->getShared(
+            'EventEspresso\Ticketing\domain\services\messages\RegisterCustomShortcodes'
         );
     }
 
