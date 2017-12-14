@@ -5,7 +5,7 @@
  * @subpackage messages
  * @since           1.0.0
  */
-if ( ! defined('EVENT_ESPRESSO_VERSION')) exit('No direct script access allowed');
+defined('EVENT_ESPRESSO_VERSION') || exit('No direct script access allowed');
 
 /**
  * The message type for tickets.
@@ -39,7 +39,7 @@ class EE_Ticketing_message_type extends EE_message_type {
      * @return void
      */
     protected function _do_messenger_hooks() {
-    	if ( $this->_active_messenger instanceof EE_Html_messenger  ) {
+        if ( $this->_active_messenger instanceof EE_Html_messenger  ) {
                         add_action( 'AHEE__EE_Html_messenger__enqueue_scripts_styles', array( $this, 'add_ticketing_js' )  );
     	}
     }
@@ -47,9 +47,9 @@ class EE_Ticketing_message_type extends EE_message_type {
 
 
     /**
-     * Takes care of enqueing necessary js for generated tickets.
+     * Takes care of enqueuing necessary js for generated tickets.
      *
-     * @return
+     * @return void
      */
     public function add_ticketing_js() {
         $min= defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
@@ -77,7 +77,7 @@ class EE_Ticketing_message_type extends EE_message_type {
 
 
     protected function _get_data_for_context( $context, EE_Registration $registration, $id ) {
-        return $registration;
+        return array($registration, EEM_Registration::status_id_approved);
     }
 
 
@@ -136,26 +136,26 @@ class EE_Ticketing_message_type extends EE_message_type {
 
 
     /**
-     * Takes care of setting up the addresee object(s) for the registrations that are used in parsing the ticket templates.
+     * Takes care of setting up the addressee object(s) for the registrations that are used in parsing the ticket
+     * templates.
      *
      * @since 1.0.0
-     *
-     * @return EE_Addressee[]
+     * @return EE_Messages_Addressee[]
      */
     protected function _registrant_addressees() {
-            $add = array();
+        $add = array();
 
-            //just looping through the attendees to make sure that the attendees listed are JUST for this registration.
-            foreach ( $this->_data->attendees[$this->_data->reg_obj->attendee_ID()] as $item => $value ) {
-                $aee[$item] = $value;
-            }
+        //just looping through the attendees to make sure that the attendees listed are JUST for this registration.
+        foreach ( $this->_data->attendees[$this->_data->reg_obj->attendee_ID()] as $item => $value ) {
+            $aee[ $item ] = $value;
+        }
 
-            $aee['events'] = $this->_data->events;
-            $aee['reg_obj'] = $this->_data->reg_obj;
-            $aee['attendees'] = $this->_data->attendees;
-            $aee = array_merge( $this->_default_addressee_data, $aee );
-            $add[] = new EE_Messages_Addressee( $aee );
-            return $add;
+        $aee['events'] = $this->_data->events;
+        $aee['reg_obj'] = $this->_data->reg_obj;
+        $aee['attendees'] = $this->_data->attendees;
+        $aee = array_merge( $this->_default_addressee_data, $aee );
+        $add[] = new EE_Messages_Addressee( $aee );
+        return $add;
     }
 
 
