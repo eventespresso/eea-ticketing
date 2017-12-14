@@ -711,6 +711,9 @@ class EED_Ticketing extends EED_Messages
      */
     public static function getTicketUrl(EE_Registration $registration)
     {
+        if(! $registration->is_approved()) {
+            return  '';
+        }
         //we need to get the correct template ID for the given event
         $event = $registration->event();
         //get the assigned ticket template for this event
@@ -763,10 +766,9 @@ class EED_Ticketing extends EED_Messages
      */
     public static function getTransactionTicketsUrl(EE_Registration $registration, $approved_only = false)
     {
-        $reg_url_link = $registration->reg_url_link();
         $query_args = array(
             'ee'    => $approved_only ? 'ee-txn-tickets-approved-url' : 'ee-txn-tickets-url',
-            'token' => $reg_url_link,
+            'token' => $registration->reg_url_link(),
         );
         return add_query_arg($query_args, get_home_url());
     }
