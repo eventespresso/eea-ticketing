@@ -342,6 +342,7 @@ class EED_Ticketing extends EED_Messages
             && isset($request['action'])
             && (
                 $request['action'] === 'approve_and_notify_registration'
+                || $request['action'] === 'approve_and_notify_registrations'
                 || $request['action'] === 'change_reg_status'
             )
         ) {
