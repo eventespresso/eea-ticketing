@@ -1,6 +1,9 @@
 <?php
 
 use EventEspresso\core\exceptions\EntityNotFoundException;
+use EventEspresso\core\exceptions\InvalidDataTypeException;
+use EventEspresso\core\exceptions\InvalidInterfaceException;
+use EventEspresso\core\services\loaders\LoaderFactory;
 
 defined('EVENT_ESPRESSO_VERSION') || exit('No direct access allowed.');
 
@@ -116,6 +119,9 @@ class EED_Ticketing extends EED_Messages
      * @return string action items with any additional things.
      * @throws EE_Error
      * @throws EntityNotFoundException
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
      */
     public static function resend_ticket_notice_trigger($action_items, $item, EE_Admin_List_Table $list_table)
     {
@@ -196,10 +202,19 @@ class EED_Ticketing extends EED_Messages
      * @param array         $icon_items current icon items
      * @param EE_Admin_Page $admin_page
      * @return array new icon_items.
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
      */
     public static function add_icons_to_list_table_legend($icon_items, EE_Admin_Page $admin_page)
     {
-        if ($admin_page instanceof Extend_Registrations_Admin_Page) {
+        $current_request_action = self::getRequest()->get('action', false);
+        $current_request_route = self::getRequest()->get('route', false);
+        if ($admin_page instanceof Extend_Registrations_Admin_Page
+            && ($current_request_action === 'default'
+                || ($current_request_action === false && $current_request_route === false)
+            )
+        ) {
             if (EEH_MSG_Template::is_mt_active('ticket_notice')) {
                 $icon_items['ticket_notice'] = array(
                     'class' => 'dashicons dashicons-email ee-icon-size-16',
@@ -265,7 +280,12 @@ class EED_Ticketing extends EED_Messages
      * @param EE_Registration $registration
      * @param array           $extra_details extra details coming from the transaction
      * @return void
+     * @throws EE_Error
      * @throws EntityNotFoundException
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
+     * @throws ReflectionException
      */
     public static function maybe_ticket_notice(EE_Registration $registration, $extra_details = array())
     {
@@ -530,6 +550,10 @@ class EED_Ticketing extends EED_Messages
      * @param bool $approved_only
      * @throws EE_Error
      * @throws EntityNotFoundException
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
+     * @throws ReflectionException
      */
     protected function _generate_tickets($approved_only = false)
     {
@@ -600,6 +624,10 @@ class EED_Ticketing extends EED_Messages
      * @param EE_Transaction    $transaction
      * @param EE_Registration[] $registrations
      * @return bool
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
+     * @throws ReflectionException
      */
     protected static function _display_all_tickets_new_system(
         $approved_only,
@@ -647,6 +675,10 @@ class EED_Ticketing extends EED_Messages
      * @param array          $registrations
      * @return bool
      * @throws EE_Error
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
+     * @throws ReflectionException
      */
     protected function _display_all_tickets_old_system(
         $approved_only,
@@ -705,10 +737,14 @@ class EED_Ticketing extends EED_Messages
 
     /**
      * Returns the url for viewing a ticket with a given registration.
+     *
      * @param EE_Registration $registration
      * @return string
      * @throws EE_Error
      * @throws EntityNotFoundException
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
      */
     public static function getTicketUrl(EE_Registration $registration)
     {
@@ -770,5 +806,18 @@ class EED_Ticketing extends EED_Messages
             'token' => $reg_url_link,
         );
         return add_query_arg($query_args, get_home_url());
+    }
+
+
+    /**
+     * Get request object.
+     *
+     * @throws InvalidArgumentException
+     * @throws InvalidDataTypeException
+     * @throws InvalidInterfaceException
+     */
+    protected static function getRequest()
+    {
+        return LoaderFactory::getLoader()->getShared('EE_Request');
     }
 }
