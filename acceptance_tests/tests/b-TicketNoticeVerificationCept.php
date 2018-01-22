@@ -116,7 +116,7 @@ $I->changeRegistrationStatusOnRegistrationDetailsPageTo(RegistrationsAdmin::REGI
 $I->amOnMessagesActivityListTablePage();
 $I->verifyMatchingCountofTextInMessageActivityListTableFor(
     2,
-    $ticket_notice_frontend_recipient['email'],
+    $ticket_notice_backend_recipient['email'],
     'to',
     'Ticket Notice',
     MessagesAdmin::MESSAGE_STATUS_SENT,
