@@ -1,1 +1,20 @@
-{"versionFile":"eea-ticketing.php","slug":"eea-ticketing","name":"EE4 Ticketing","releaseFilesRemove":["src\/tests\/**","src\/info.json","src\/circle.yml","src\/readme.txt","src\/.travis.yml"],"github":true,"awsbucket":"","awsregion":"","srcBuildFolderName":"eea-ticketing","textDomain":"event_espresso","wpOrgRelease":"1.0.7.p","remoteNamesToPushTo":["demoee"]}
+{
+  "versionFile": "eea-ticketing.php",
+  "slug": "eea-ticketing",
+  "name": "EE4 Ticketing",
+  "releaseFilesRemove": [
+    "src\/tests\/**",
+    "src\/info.json",
+    "src\/circle.yml",
+    "src\/readme.txt",
+    "src\/.travis.yml"
+  ],
+  "awsbucket": "",
+  "awsregion": "",
+  "srcBuildFolderName": "eea-ticketing",
+  "textDomain": "event_espresso",
+  "wpOrgRelease": "1.0.7.p",
+  "remoteNamesToPushTo": [
+    "demoee"
+  ]
+}
