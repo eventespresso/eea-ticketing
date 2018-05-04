@@ -36,16 +36,15 @@
  *
  * ------------------------------------------------------------------------
  */
-define( 'EE_TICKETING_VERSION', '1.0.8.rc.001' );
-define( 'EE_TICKETING_PLUGIN_FILE',  __FILE__ );
-function load_ee_core_ticketing() {
-if ( class_exists( 'EE_Addon' )) {
-	// new_addon version
-	require_once ( plugin_dir_path( __FILE__ ) . 'EE_Ticketing.class.php' );
-	EE_Ticketing::register_addon();
+define('EE_TICKETING_VERSION', '1.0.8.rc.001');
+define('EE_TICKETING_PLUGIN_FILE', __FILE__);
+function load_ee_core_ticketing()
+{
+    if (class_exists('EE_Addon')) {
+        // new_addon version
+        require_once(plugin_dir_path(__FILE__) . 'EE_Ticketing.class.php');
+        EE_Ticketing::register_addon();
+    }
 }
-}
-add_action( 'AHEE__EE_System__load_espresso_addons', 'load_ee_core_ticketing' );
 
-// End of file eea-ticketing.php
-// Location: wp-content/plugins/espresso-new-addon/eea-ticketing.php
+add_action('AHEE__EE_System__load_espresso_addons', 'load_ee_core_ticketing');
