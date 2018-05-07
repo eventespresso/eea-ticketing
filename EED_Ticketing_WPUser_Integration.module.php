@@ -1,7 +1,5 @@
 <?php
 
-defined('EVENT_ESPRESSO_VERSION') || exit('No direct access allowed.');
-
 /**
  * EED_Ticketing_WPUser_Integration
  * This module is used for any integrations with the EE WPUser Integration add-on.
@@ -101,6 +99,6 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
      */
     public function run($WP)
     {
-        //not implemented for this module.
+        // not implemented for this module.
     }
 }
