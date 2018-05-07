@@ -6,7 +6,6 @@ use EventEspresso\core\exceptions\InvalidDataTypeException;
 use EventEspresso\core\services\loaders\Loader;
 use EventEspresso\core\services\loaders\LoaderFactory;
 
-defined('EVENT_ESPRESSO_VERSION') || exit;
 // define the plugin directory path and URL
 define('EE_TICKETING_PATH', plugin_dir_path(__FILE__));
 define('EE_TICKETING_URL', plugin_dir_url(__FILE__));
@@ -21,7 +20,7 @@ define('EE_TICKETING_URL', plugin_dir_url(__FILE__));
  * @author             Darren Ethier
  * @since              1.0.0
  */
-Class  EE_Ticketing extends EE_Addon
+class EE_Ticketing extends EE_Addon
 {
 
     /**
@@ -35,7 +34,8 @@ Class  EE_Ticketing extends EE_Addon
      *
      * @param LoaderInterface|null $loader
      */
-    public function __construct(LoaderInterface $loader = null) {
+    public function __construct(LoaderInterface $loader = null)
+    {
         EE_Ticketing::$loader = $loader;
         parent::__construct();
     }
@@ -155,5 +155,4 @@ Class  EE_Ticketing extends EE_Addon
         );
         return $setup_args;
     }
-
 }

@@ -5,8 +5,6 @@ use EventEspresso\core\exceptions\InvalidDataTypeException;
 use EventEspresso\core\exceptions\InvalidInterfaceException;
 use EventEspresso\core\services\loaders\LoaderFactory;
 
-defined('EVENT_ESPRESSO_VERSION') || exit('No direct access allowed.');
-
 /**
  * EE_Ticketing module.  Takes care of registering the url trigger for the special [TXN_TICKETS_URL] messages shortcode.
  *
@@ -27,7 +25,7 @@ class EED_Ticketing extends EED_Messages
      */
     public static function set_hooks()
     {
-        //add trigger for ticket notice
+        // add trigger for ticket notice
         add_action(
             'AHEE__EE_Registration_Processor__trigger_registration_update_notifications',
             array('EED_Ticketing', 'maybe_ticket_notice'),
@@ -71,7 +69,7 @@ class EED_Ticketing extends EED_Messages
             10,
             2
         );
-        //add resend_ticket_notice action to registration list table.
+        // add resend_ticket_notice action to registration list table.
         add_filter(
             'FHEE__EE_Admin_List_Table___action_string__action_items',
             array('EED_Ticketing', 'resend_ticket_notice_trigger'),
@@ -79,7 +77,7 @@ class EED_Ticketing extends EED_Messages
             3
         );
 
-        //add icons to legend
+        // add icons to legend
         add_filter(
             'FHEE__EE_Admin_Page___display_legend__items',
             array('EED_Ticketing', 'add_icons_to_list_table_legend'),
@@ -87,7 +85,7 @@ class EED_Ticketing extends EED_Messages
             2
         );
 
-        //filter the registrations list table route so we can add the route for
+        // filter the registrations list table route so we can add the route for
         add_filter(
             'FHEE__Extend_Registrations_Admin_Page__page_setup__page_routes',
             array('EED_Ticketing', 'additional_reg_page_routes'),
@@ -132,7 +130,7 @@ class EED_Ticketing extends EED_Messages
         }
         if ($list_table instanceof EE_Registrations_List_Table && $item instanceof EE_Registration) {
             $resend_tkt_notice_lnk = '';
-            //only display resend ticket notice link IF the registration is approved.
+            // only display resend ticket notice link IF the registration is approved.
             if ($item->is_approved()) {
                 $resend_ticket_notice_url = EEH_URL::add_query_args_and_nonce(
                     array(
@@ -291,15 +289,15 @@ class EED_Ticketing extends EED_Messages
     {
         $do_send = self::_verify_registration_notification_send($registration, $extra_details);
         if (! $do_send) {
-            //no messages please
+            // no messages please
             return;
         }
 
 
-        //check to determine what method used to setup the trigger
-        //I'm using a check for a method that only existed in a certain core branch being used for necessary
-        //MER dependencies, that also contains changes in messages system that do not exist in the master
-        //branch at the time of this work.
+        // check to determine what method used to setup the trigger
+        // I'm using a check for a method that only existed in a certain core branch being used for necessary
+        // MER dependencies, that also contains changes in messages system that do not exist in the master
+        // branch at the time of this work.
         $registration_processor = EE_Registry::instance()->load_class('Registration_Processor');
         $data                   = method_exists(
             $registration_processor,
@@ -312,8 +310,8 @@ class EED_Ticketing extends EED_Messages
             )
             : array($registration->transaction(), null);
 
-        //if we're not in the MER branch then we also consider the status of the  primary registration on
-        //whether to continue or not.
+        // if we're not in the MER branch then we also consider the status of the  primary registration on
+        // whether to continue or not.
         if (! method_exists(
             $registration_processor,
             'generate_ONE_registration_from_line_item'
@@ -332,7 +330,7 @@ class EED_Ticketing extends EED_Messages
                         'ticket_notice',
                         $data
                     );
-                    //batch queue and initiate_request
+                    // batch queue and initiate_request
                     self::$_MSG_PROCESSOR->batch_queue_for_generation_and_persist($messages_to_generate);
                     self::$_MSG_PROCESSOR->get_queue()->initiate_request_by_priority();
                 } catch (EE_Error $e) {
@@ -373,7 +371,7 @@ class EED_Ticketing extends EED_Messages
                 $_REQUEST['_REG_ID'] = $reg_id;
                 self::process_resend_ticket_notice(null, false);
             }
-            //restore $_REQUEST to original for any other plugins hooking in later.
+            // restore $_REQUEST to original for any other plugins hooking in later.
             $_REQUEST = $original_request;
         }
         return $success;
@@ -395,10 +393,10 @@ class EED_Ticketing extends EED_Messages
             $success = false;
         }
 
-        //get reg_object from reg_id
+        // get reg_object from reg_id
         $reg = EE_Registry::instance()->load_model('Registration')->get_one_by_ID($_REQUEST['_REG_ID']);
 
-        //if no reg object then error.
+        // if no reg object then error.
         if (! $reg instanceof EE_Registration) {
             EE_Error::add_error(
                 sprintf(
@@ -415,7 +413,7 @@ class EED_Ticketing extends EED_Messages
             $success = false;
         }
 
-        //if reg object is not approved then let's just skip now to avoid processing.
+        // if reg object is not approved then let's just skip now to avoid processing.
         if (! $reg->is_approved()) {
             $success = false;
         }
@@ -443,10 +441,10 @@ class EED_Ticketing extends EED_Messages
             }
 
             if ($success) {
-                //check to determine what method used to setup the trigger
-                //I'm using a check for a method that only existed in a certain core branch being used for necessary
-                //MER dependencies, that also contains changes in messages system that do not exist in the master
-                //branch at the time of this work.
+                // check to determine what method used to setup the trigger
+                // I'm using a check for a method that only existed in a certain core branch being used for necessary
+                // MER dependencies, that also contains changes in messages system that do not exist in the master
+                // branch at the time of this work.
                 $registration_processor = EE_Registry::instance()->load_class('Registration_Processor');
                 $data                   = method_exists(
                     $registration_processor,
@@ -557,12 +555,12 @@ class EED_Ticketing extends EED_Messages
      */
     protected function _generate_tickets($approved_only = false)
     {
-        //get the params from the request
+        // get the params from the request
         $token = EE_Registry::instance()->REQ->is_set('token')
             ? EE_Registry::instance()->REQ->get('token')
             : '';
 
-        //verify the needed params are present.
+        // verify the needed params are present.
         if (empty($token)) {
             throw new EE_Error(
                 esc_html__(
@@ -576,23 +574,23 @@ class EED_Ticketing extends EED_Messages
 
         $registration = EEM_Registration::instance()->get_one(array(array('REG_url_link' => $token)));
 
-        //valid registration?
+        // valid registration?
         if (! $registration instanceof EE_Registration) {
-            return; //get out we need a valid registration.
+            return; // get out we need a valid registration.
         }
 
         $transaction = $registration->transaction();
-        //if primary registration then we grab all registrations and loop through to generate the html.  If not primary,
+        // if primary registration then we grab all registrations and loop through to generate the html.  If not primary,
         // then we just use the existing registration and throw that ticket up.  Note this is also conditional on the
         // approved_only flag.  If that is true and there are no approved registrations for the requested route, then we
         // throw up error screen.
         if (! $registration->is_primary_registrant()) {
-            //need to get all registrations attached to the contact for this registrant that are for this transaction.
+            // need to get all registrations attached to the contact for this registrant that are for this transaction.
             $registrations = $transaction instanceof EE_Transaction
                 ? $transaction->registrations(array(array('ATT_ID' => $registration->attendee())))
                 : array();
         } else {
-            //get all registrations for transaction
+            // get all registrations for transaction
             $registrations = $transaction instanceof EE_Transaction ? $transaction->registrations() : array();
         }
 
@@ -603,8 +601,8 @@ class EED_Ticketing extends EED_Messages
         }
 
         if (! $success && $approved_only) {
-            //no tickets generated due to approved status requirement so let's show an appropriate error
-            //screen.
+            // no tickets generated due to approved status requirement so let's show an appropriate error
+            // screen.
             EE_Registry::instance()->load_helper('Template');
             EEH_Template::locate_template(
                 array(EE_TICKETING_PATH . 'templates/eea-ticketing-no-generated-tickets.template.php'),
@@ -646,7 +644,7 @@ class EED_Ticketing extends EED_Messages
             );
         }
 
-        //generate and get the queue so we can get all the generated messages and use that for the content.
+        // generate and get the queue so we can get all the generated messages and use that for the content.
         try {
             /** @var EE_Messages_Queue $generated_queue */
             $generated_queue = self::$_MSG_PROCESSOR->generate_and_return($messages_to_generate);
@@ -704,7 +702,7 @@ class EED_Ticketing extends EED_Messages
             }
         }
 
-        //now let's consolidate the $message objects into one message object for the actual displayed template
+        // now let's consolidate the $message objects into one message object for the actual displayed template
         $content = '';
         if (! empty($messages)) {
             $final_msg = new stdClass();
@@ -726,7 +724,7 @@ class EED_Ticketing extends EED_Messages
                 : $final_msg->template_pack;
             $final_msg->variation     = empty($final_msg->variation) ? 'default' : $final_msg->variation;
 
-            //now we can trigger that message setup
+            // now we can trigger that message setup
             self::$_EEMSG->send_message_with_messenger_only('html', 'ticketing', $final_msg);
         } else {
             $success = false;
@@ -748,9 +746,9 @@ class EED_Ticketing extends EED_Messages
      */
     public static function getTicketUrl(EE_Registration $registration)
     {
-        //we need to get the correct template ID for the given event
+        // we need to get the correct template ID for the given event
         $event = $registration->event();
-        //get the assigned ticket template for this event
+        // get the assigned ticket template for this event
         $message_template_group = EEM_Message_Template_Group::instance()->get_one(array(
             array(
                 'Event.EVT_ID'     => $event->ID(),

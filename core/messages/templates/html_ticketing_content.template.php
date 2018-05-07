@@ -20,7 +20,7 @@
       </tr>
     </table>
    [BARCODE_* w=1 h=70 fsize=18 bgcolor=#ffffff color=#000000 output_type=bmp]
-	  <div style="text-align: center">[RECIPIENT_REGISTRATION_CODE]</div>
+      <div style="text-align: center">[RECIPIENT_REGISTRATION_CODE]</div>
   </div>
   <div class="extra_info">
     <div class="divider"></div>
