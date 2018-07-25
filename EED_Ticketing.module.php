@@ -573,7 +573,6 @@ class EED_Ticketing extends EED_Messages
                     '&ampamp;',
                     '&'
                 )
-
             );
         }
 
