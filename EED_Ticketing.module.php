@@ -564,16 +564,9 @@ class EED_Ticketing extends EED_Messages
         if (empty($token)) {
             throw new EE_Error(
                 esc_html__(
-                    'Whoa! Dude! Something went wrong and we\'re unable to display your ticket. Please contact the website administrator and inform them that the ticket URL is invalid.',
+                    'The request for the "ee-txn-tickets-url" route has a malformed url.',
                     'event_espresso'
                 )
-                . '<br/>'
-                . sprintf(
-                    esc_html__('If you\'re comfortable with a little do-it-yourself repairing, you could try changing any "%1$s"s in the address bar to simply "%2$s".', 'event_espresso'),
-                    '&ampamp;',
-                    '&'
-                )
-
             );
         }
 
