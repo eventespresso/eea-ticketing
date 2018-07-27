@@ -562,9 +562,22 @@ class EED_Ticketing extends EED_Messages
 
         // verify the needed params are present.
         if (empty($token)) {
+            // are they using &amp; instead of &? if so, maybe we can fix the querystring enough to find the token
+            $query_args = array();
+            parse_str(
+                str_replace(
+                    array('&amp;', '&amp'),
+                    '&',
+                    isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''
+                ),
+                $query_args
+            );
+            $token = isset($query_args['token']) ? $query_args['token'] : '';
+        }
+        if (empty($token)) {
             throw new EE_Error(
                 esc_html__(
-                    'The request for the "ee-txn-tickets-url" route has a malformed url.',
+                    'Something went wrong and we\'re unable to display your ticket. Please contact the event organizer to get your ticket.',
                     'event_espresso'
                 )
             );
