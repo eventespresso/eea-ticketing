@@ -570,7 +570,7 @@ class EED_Ticketing extends EED_Messages
         if (empty($token)) {
             throw new EE_Error(
                 esc_html__(
-                    'Something went wrong and we\'re unable to display your ticket. Please contact the website administrator and inform them that the ticket URL is invalid.',
+                    'Something went wrong and we\'re unable to display your ticket. Please contact the event organizer to get your ticket.',
                     'event_espresso'
                 )
             );
