@@ -564,7 +564,14 @@ class EED_Ticketing extends EED_Messages
         if (empty($token)) {
             // are they using &amp; instead of &? if so, maybe we can fix the querystring enough to find the token
             $query_args = array();
-            parse_str(str_replace(array('&amp;', '&amp'), '&', $_SERVER['QUERY_STRING']), $query_args);
+            parse_str(
+                str_replace(
+                    array('&amp;', '&amp'),
+                    '&',
+                    isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''
+                ),
+                $query_args
+            );
             $token = isset($query_args['token']) ? $query_args['token'] : '';
         }
         if (empty($token)) {
