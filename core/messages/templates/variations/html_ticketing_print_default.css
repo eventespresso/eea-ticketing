@@ -1,0 +1,3 @@
+.outside:not(:first-of-type) {
+	page-break-before:always
+}
