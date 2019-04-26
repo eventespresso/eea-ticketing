@@ -1,4 +1,8 @@
 jQuery(document).ready(function($) {
+	// browser detection
+	var iOS = !! navigator.platform &&
+		/iPad|iPhone|iPod/.test( navigator.platform );
+
 	//qrcodes
 	var qrcode_val, dimensions, qrcolor, qrmode, qrlabel;
 	$('.ee-qr-code').each( function(i) {
@@ -21,7 +25,7 @@ jQuery(document).ready(function($) {
 		bc_settings.bgColor = $('.ee-barcode-bgcolor', this ).text();
 		bc_settings.fontSize = parseInt( $('.ee-barcode-fsize', this ).text(), 10 );
 		bc_settings.output= $('.ee-barcode-output-type', this ).text();
-		bc_type = $('.ee-barcode-type', this ).text();
+		bc_type = iOS ? 'css' : $('.ee-barcode-type', this ).text();
 		container.barcode( { code: barcode_val }, bc_type, bc_settings );
 	});
 
