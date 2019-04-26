@@ -2,7 +2,8 @@ jQuery(document).ready(function($) {
 	// browser detection
 	var iOS = !! navigator.platform &&
 		/iPad|iPhone|iPod/.test( navigator.platform );
-
+	console.log( iOS );
+	console.log( navigator.platform );
 	//qrcodes
 	var qrcode_val, dimensions, qrcolor, qrmode, qrlabel;
 	$('.ee-qr-code').each( function(i) {
