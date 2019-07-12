@@ -143,15 +143,27 @@ class RegisterCustomShortcodes
              )
              . '</li>'
              . '<li><strong>output_type</strong>:'
-             . esc_html__(
-                 'Used to set the output type for the generated barcode (default is svg).  Can be either svg, canvas, bmp, or css. <em>Note: Some output types don\'t print well depending on the browser.  Make sure you verify printability.</em> [BARC0DE_* output_type=bmp]',
-                 'event_espresso'
+             . sprintf(
+                 /* translators: 1: emphasis tag, 2: close emphasis tag, 3: shortcode example */
+                 esc_html__(
+                     'Used to set the output type for the generated barcode (default is svg). Can be either svg, canvas, bmp, or css. %1$sNote: Some output types don\'t print well depending on the browser. Make sure you verify printability.%2$s %3$s',
+                     'event_espresso'
+                 ),
+                 '<em>',
+                 '</em>',
+                 '<code>[BARC0DE_* output_type=bmp]</code>'
              )
              . '</li>'
              . '<li><strong>generate_for</strong>:'
-             . esc_html__(
-                 'This allows you to set what gets used to generate the barcode. When the barcode is scanned this is the value that will be returned. There are two options: "long_code", which is the equivalent to <em>reg_url_lnk</em> value for the registration; or "short_code", which is the equivalent to the <em>reg_code</em> value for the registration.  The default is "short_code". <code>[BARCODE_* generate_for=short_code]</code>',
-                 'event_espresso'
+             . sprintf(
+                 /* translators: 1: emphasis tag, 2: close emphasis tag, 3: shortcode example */
+                 esc_html__(
+                     'This allows you to set what gets used to generate the barcode. When the barcode is scanned this is the value that will be returned. There are two options: "long_code", which is the equivalent to %1$sreg_url_link%2$s value for the registration; or "short_code", which is the equivalent to the %1$sreg_code%2$s value for the registration. The default is "short_code". %3$s',
+                     'event_espresso'
+                 ),
+                 '<em>',
+                 '</em>',
+                 '<code>[BARCODE_* generate_for=short_code]</code>'
              )
              . '</ul></p>';
         }
