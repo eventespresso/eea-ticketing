@@ -36,6 +36,14 @@ class RegisterCustomShortcodes
             10,
             5
         );
+        // this is set at such a late priority because we want to be absolutely sure any shortcodes
+        // in the "content" attribute have already been parsed.
+        add_filter(
+            'FHEE__EE_Shortcodes__parser_after',
+            array($this, 'customQrCodeParser'),
+            1,
+            5
+        );
         add_filter(
             'FHEE__EE_Messages_Validator__get_specific_shortcode_excludes',
             array($this, 'excludeNewShortcodes'),
@@ -57,6 +65,48 @@ class RegisterCustomShortcodes
     {
         // shortcodes to add to EE_Ticket_Shortcodes
         if ($shortcode_library instanceof EE_Ticket_Shortcodes) {
+            // add custom_qr shortcode to every possible field and it needs to always be the _last_ shortcode parsed.
+            $shortcodes['[CUSTOM_QRCODE_*]'] = esc_html__(
+                'This is a shortcode used for generating a qrcode for the arbitrary information. Be aware that there are some limits to the amount of information a qr code can contain.  It is recommended that you test the code output.',
+                'event_espresso'
+            )
+            . '<p>'
+            . esc_html__(
+                'Note: there are a number of different parameters you can use for the qrcode generated.  We have the defaults at the recommended settings, however, you can change these:',
+                'event_espresso'
+            )
+            . '<ul>'
+            . '<li><strong>content</strong>:'
+            . esc_html__(
+                'This is what will be encoded in the custom qr_code. Note that any shortcodes available in the current field can be used in this content',
+                'event_espresso'
+            )
+            . '</li>'
+            . '<li><strong>d</strong>:'
+            . esc_html__(
+                'You can add a extra param for setting the dimensions of the qr code using "d=20" format.  So [QRCODE_* d=40] will parse to a qrcode that is 40 pixels wide by 40 pixels high.',
+                'event_espresso'
+            )
+            . '</li>'
+            . '<li><strong>color</strong>:'
+            . esc_html__(
+                'Use a hexadecimal color for the qr code color.  So you can do [QRCODE_* color=#f00] to have the code printed in red.',
+                'event_espresso'
+            )
+            . '</li>'
+            . '<li><strong>mode</strong>:'
+            . esc_html__(
+                'This parameter is used to indicate what mode the code is generated in.  0 = normal, 1 = label strip, 2 = label box.  Use in the format [QRCODE_* mode=2].',
+                'event_espresso'
+            )
+            . '</li>'
+            . '<li><strong>label</strong>:'
+            . esc_html__(
+                'This allows you to set a custom label that will appear over the code. [QRCODE_* label="My QR Code"]',
+                'event_espresso'
+            )
+            . '</li>'
+            . '</ul></p>';
             $shortcodes['[QRCODE_*]'] = esc_html__(
                 'This is a shortcode used for generating a qrcode for the registration.  The only thing stored via this code is the unique reg_url_link code attached to a registration record.',
                 'event_espresso'
@@ -182,6 +232,61 @@ class RegisterCustomShortcodes
 
 
     /**
+     * @todo currently testing this.  It's not working.  I suspect I may need to add a parser_before filter hook in core
+     *       so that I can add some dummy delimiters.  That way the content won't get picked up by earlier parsers.
+     *       I'll also need to rewire the js so that it will pick up multiple instances of qr-code generation nodes.
+     *       Likely can just use data attributes instead of the multiple spans in place right now!
+     * @param $shortcode
+     * @return string
+     */
+
+    public function customQrCodeParser(
+        $parsed,
+        $shortcode,
+        $data,
+        $extra_data,
+        EE_Shortcodes $shortcode_library
+    ) {
+        // if not in the EE_Ticket_Shortcodes parser bail early because this is potentially expensive
+        if (! ($shortcode_library instanceof EE_Ticket_Shortcodes)) {
+            return $parsed;
+        }
+        if (strpos($shortcode, '[CUSTOM_QRCODE_*') !== false) {
+            // require the shortcode file if necessary
+            if (! function_exists('shortcode_parse_atts')) {
+                require_once ABSPATH . WPINC . '/shortcodes.php';
+            }
+
+            // see if there are any atts on the shortcode.
+            // $shortcode_to_parse = str_replace(['[', ']'], '', $shortcode);
+            $shortcode_to_parse = preg_replace('/(^\[|\]$)/', '', $shortcode);
+            $attrs = shortcode_parse_atts($shortcode_to_parse);
+            // set custom dimension if present or default if not.
+            $dimensions = isset($attrs['d']) ? (int) $attrs['d'] : 110;
+            // color?
+            $color = isset($attrs['color']) ? $attrs['color'] : '#000';
+            // mode?
+            $mode = isset($attrs['mode']) ? (int) $attrs['mode'] : 0;
+            $mode = $mode > 2 || $mode < 0 ? 0 : $mode;
+            // label?
+            $label = isset($attrs['label']) ? $attrs['label'] : '';
+            $content = isset($attrs['content']) ? $attrs['content'] : '';
+            $parsed = <<<EOD
+<div 
+    class="ee-qr-code" 
+    data-dimensions="$dimensions" 
+    data-content="$content" 
+    data-color="$color" 
+    data-mode="$mode" 
+    data-label="$label"
+>
+</div>
+EOD;
+        }
+        return $parsed;
+    }
+
+    /**
      * Call back for the FHEE__EE_Shortcodes__parser_after filter.
      * This contains the logic for parsing the new shortcodes introduced by this addon.
      *
@@ -241,17 +346,17 @@ class RegisterCustomShortcodes
                 $mode = $mode > 2 || $mode < 0 ? 0 : $mode;
                 // label?
                 $label = isset($attrs['label']) ? $attrs['label'] : '';
-                // all the parsed qr code really does is setup some hidden values for the qrcode js to do its thing.
-                $parsed = '<div class="ee-qr-code"><span class="ee-qrcode-dimensions" style="display:none;">'
-                          . $dimensions
-                          . '</span>';
-                $parsed .= '<span class="ee-qrcode-reg_url_link" style="display:none;">'
-                           . $registration->reg_url_link()
-                           . '</span>';
-                $parsed .= '<span class="ee-qrcode-color" style="display:none;">' . $color . '</span>';
-                $parsed .= '<span class="ee-qrcode-mode" style="display:none;">' . $mode . '</span>';
-                $parsed .= '<span class="ee-qrcode-label" style="display:none;">' . $label . '</span>';
-                $parsed .= '</div>';
+                $parsed = <<<EOD
+<div 
+    class="ee-qr-code" 
+    data-dimensions="$dimensions" 
+    data-content="{$registration->reg_url_link()}" 
+    data-color="$color" 
+    data-mode="$mode" 
+    data-label="$label"
+>
+</div>
+EOD;
             } elseif (strpos($shortcode, '[GRAVATAR_*') !== false) {
                 $attendee = $ee_messages_addressee->att_obj;
                 $email = $attendee instanceof EE_Attendee ? $attendee->email() : '';
@@ -364,6 +469,7 @@ class RegisterCustomShortcodes
             foreach ($fields as $field) {
                 $shortcode_excludes[ $field ][] = '[QRCODE_*]';
                 $shortcode_excludes[ $field ][] = '[BARCODE_*]';
+                $shortcode_excludes[ $field ][] = '[CUSTOM_QRCODE_*]';
             }
         }
         return $shortcode_excludes;
