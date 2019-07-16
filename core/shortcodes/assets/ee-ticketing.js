@@ -1,13 +1,15 @@
 jQuery(document).ready(function($) {
 	//qrcodes
-	var qrcode_val, dimensions, qrcolor, qrmode, qrlabel;
 	$('.ee-qr-code').each( function(i) {
-		qrcode_val = $('.ee-qrcode-reg_url_link', this).text();
-		dimensions = parseInt( $('.ee-qrcode-dimensions', this).text(), 10 );
-		qrcolor = $('.ee-qrcode-color', this).text();
-		qrmode = parseInt( $('.ee-qrcode-mode', this).text(), 10);
-		qrlabel = $('.ee-qrcode-label', this).text();
-		$(this).qrcode( {size:dimensions, text: qrcode_val, fill: qrcolor, mode: qrmode, label : qrlabel } );
+		var data = $( this ).data();
+		var config = {
+			size: parseInt( data.dimensions, 10 ),
+			text: data.content,
+			fill: data.color,
+			mode: parseInt( data.mode, 10),
+			label: data.label
+		};
+		$(this).qrcode( config );
 	});
 
 	//barcodes
