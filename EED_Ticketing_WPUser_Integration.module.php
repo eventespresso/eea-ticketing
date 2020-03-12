@@ -66,8 +66,10 @@ class EED_Ticketing_WPUser_Integration extends EED_Module
             return $actions;
         }
         $actions = (array) $actions;
-        $actions['ticket'] = '<a aria-label="' . esc_html__('Link to view ticket', 'event_espresso') . '"'
-                . ' href="' . EED_Ticketing::getTicketUrl($registration) . '">'
+        $link_to_view_ticket_text = esc_html__('Link to view ticket', 'event_espresso');
+        $actions['ticket'] = '<a aria-label="' . $link_to_view_ticket_text
+                . '" title="' . $link_to_view_ticket_text
+                . '" href="' . EED_Ticketing::getTicketUrl($registration) . '">'
                 . '<span class="dashicons dashicons-tickets-alt ee-icon-size-18"></span></a>';
         return $actions;
     }
